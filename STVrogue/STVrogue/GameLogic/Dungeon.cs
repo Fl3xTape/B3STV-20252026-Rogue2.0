@@ -185,6 +185,9 @@ namespace STVrogue.GameLogic
             if (numberOfRooms < 4)
                 throw new ArgumentException("A grid-dungeon should have at least five rooms.");
             
+            if (maximumRoomCapacity < 1)
+                throw new ArgumentException("A dungeon should have at least one capacity.");
+            
             int numOfColumn = (int) Math.Sqrt((double)numberOfRooms) ;
             int numOfRow = numberOfRooms / numOfColumn ;
             if (numberOfRooms % numOfColumn != 0)
@@ -192,11 +195,26 @@ namespace STVrogue.GameLogic
                 numOfRow++;
             }
             Room[ , ] created = new Room[numOfColumn, numOfRow] ;
+            
+            // calculate the exit room coords to identify neighbours:
+            int exitK = (numberOfRooms - 1) / numOfRow;
+            int exitJ = (numberOfRooms - 1) % numOfRow;
             for (int k = 0; k < numOfColumn; k++)
             {
                 for (int j = 0; j < numOfRow && Rooms.Count < numberOfRooms; j++)
                 {
-                    int capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    bool isNeighborOfExit =
+                        (k == exitK - 1 && j == exitJ) || // west
+                        (k == exitK && j == exitJ - 1);  // north
+
+                    int capacity;
+                    if ((k == 0 && j == 0) || (Rooms.Count + 1 == numberOfRooms)) 
+                        capacity = 0;
+                    else if (isNeighborOfExit)
+                        capacity = maximumRoomCapacity; 
+                    else
+                        capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    
                     created[k,j] = new Room("R" + (k*numOfRow+j), RoomType.ORDINARYroom, capacity);
                     Rooms.Add(created[k,j]);
                     // make the last added room to be the exit room:
@@ -206,17 +224,22 @@ namespace STVrogue.GameLogic
             // make the (0,0) to be the start-room:
             StartRoom = created[0, 0];
             // connect the rooms to form a 2D grid:
-            for (int k = 1; k < numOfColumn; k++)
+            for (int k = 0; k < numOfColumn; k++)
             {
-                for (int j = 1; j < numOfRow; j++)
+                for (int j = 0; j < numOfRow; j++)
                 {
                     if (created[k,j] == null)
                         continue;
-                    created[k,j].Connect(created[k-1,j], Direction.WEST);
-                    created[k,j].Connect(created[k,j-1], Direction.NORTH);
+                    if (k < numOfColumn - 1 && created[k+1,j] != null)
+                    {
+                        created[k,j].Connect(created[k+1,j], Direction.EAST);
+                    }
+                    if (j < numOfRow - 1 && created[k,j+1] != null)
+                    {
+                        created[k,j].Connect(created[k,j+1], Direction.SOUTH);
+                    }
                 }
             }
-            //done
         }
 
         #region additional getters
