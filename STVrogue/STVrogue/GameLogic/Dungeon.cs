@@ -117,7 +117,10 @@ namespace STVrogue.GameLogic
         {   
             if (numberOfRooms < 5)
                 throw new ArgumentException("A tree-shaped dungeon should have at least five rooms.");
-
+            
+            if (maximumRoomCapacity < 1)
+                throw new ArgumentException("A dungeon should have at least one capacity.");
+            
             // we will create the start-room, then we will breadth-firstly expand it to a tree.
             
             // list to be used as fifo-queue for the breadth-first expansion:
@@ -134,7 +137,12 @@ namespace STVrogue.GameLogic
                 int numOfChildrenToAdd = Math.Min(branchingDegree, numberOfRooms - Rooms.Count);
                 for (int k = 0; k < numOfChildrenToAdd; k++)
                 {
-                    int capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    int capacity = 0;
+                    if (Rooms.Count + 1 < numberOfRooms)
+                    {
+                        capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    }
+          
                     Room childRoom = new Room("R" + Rooms.Count, RoomType.ORDINARYroom, capacity);
                     Direction dir = Direction.NORTH;
                     switch (k % branchingDegree)
@@ -150,6 +158,22 @@ namespace STVrogue.GameLogic
             }
             // now we have a tree with N rooms. We need to make the last room the exit-room.
             ExitRoom = Rooms[Rooms.Count - 1];
+            // the neighbours of this exit room should be recreated with maximum capacity:
+            foreach ((Room,Direction) n in ExitRoom.Neighbors.ToList())
+            {
+                Room room = n.Item1;
+                Room newRoom = new Room(room.Id, room.RoomType, maximumRoomCapacity);
+                // disconnect room from neighbours and connect new one
+                foreach ((Room,Direction) m in room.Neighbors.ToList())
+                {
+                    Room neighborRoom = m.Item1;
+                    Direction neighborDir = m.Item2;
+                    neighborRoom.Disconnect(room);
+                    neighborRoom.Connect(newRoom, Opposite(neighborDir));
+                }
+                Rooms.Remove(room);
+                Rooms.Add(newRoom);
+            }
         }
         
         /// <summary>
@@ -215,6 +239,21 @@ namespace STVrogue.GameLogic
         }
         #endregion
         
+        Direction Opposite(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.EAST:
+                    return Direction.WEST;
+                case Direction.WEST:
+                    return Direction.EAST;
+                case Direction.NORTH:
+                    return Direction.SOUTH;
+                case Direction.SOUTH:
+                    return Direction.NORTH;
+            }
+            throw new Exception("Invalid direction");
+        }
     }
 
     [Serializable()]
@@ -239,6 +278,8 @@ namespace STVrogue.GameLogic
     {
         NORTH, EAST, SOUTH, WEST
     }
+    
+    
 
     /// <summary>
     /// Representing a room in a dungeon.
