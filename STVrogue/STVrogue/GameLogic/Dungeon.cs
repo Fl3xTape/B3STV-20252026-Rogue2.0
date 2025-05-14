@@ -70,6 +70,9 @@ namespace STVrogue.GameLogic
             if (numberOfRooms < 3)
                 throw new ArgumentException("A linear dungeon should have at least three rooms.");
             
+            if (maximumRoomCapacity < 1)
+                throw new ArgumentException("A dungeon should have at least one capacity.");
+            
             Room prev = null;
             Room r = null;
             for (int k = 0 ; k<numberOfRooms; k++)
@@ -77,21 +80,29 @@ namespace STVrogue.GameLogic
                 int capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
                 if (k == 0)
                 {
+                    capacity = 0;
                     r = new Room("R" + k, RoomType.STARTroom, capacity); 
                     StartRoom = r;
                     prev = r;
                 }
                 else if (k == numberOfRooms - 1)
                 {
+                    capacity = 0;
                     r = new Room("R" + k, RoomType.EXITroom, capacity);
                     ExitRoom = r;
+                    prev.Connect(r, Direction.EAST);
+                    prev = r;
+                }
+                else if (k == numberOfRooms - 2)
+                {
+                    capacity = maximumRoomCapacity;
+                    r = new Room("R" + k, RoomType.ORDINARYroom, capacity);
                     prev.Connect(r, Direction.EAST);
                     prev = r;
                 }
                 else
                 {
                     r = new Room("R" + k, RoomType.ORDINARYroom, capacity);
-                    ExitRoom = r;
                     prev.Connect(r, Direction.EAST);
                     prev = r;
                 }

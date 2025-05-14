@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using STVrogue.GameLogic;
@@ -22,8 +23,24 @@ namespace NUnitTests
        [TestCase(3,1)]
        [TestCase(3,2)]
        [TestCase(3,3)]
+       [TestCase(3,100)]
        public void test_LinearDungeon(int N, int capacity)
         {
+            // we cannot have a dungeon with less than 3 rooms
+            if (N < 3)
+            {
+                Assert.Throws<ArgumentException>(() =>
+                    new Dungeon(new RandomGenerator(123), DungeonShapeType.LINEAR, N, capacity));
+                return;
+            }
+            // we cannot have a dungeon with less than 1 maximum capacity
+            if (capacity < 1)
+            {
+                Assert.Throws<ArgumentException>(() =>
+                    new Dungeon(new RandomGenerator(123), DungeonShapeType.LINEAR, N, capacity));
+                return;
+            }
+            
             Dungeon dungeon = new Dungeon(new RandomGenerator(123), DungeonShapeType.LINEAR,N,capacity);
             // we have N rooms:
             Assert.IsTrue(dungeon.Rooms.Count == N);
@@ -39,6 +56,14 @@ namespace NUnitTests
             Assert.IsTrue(dungeon.Rooms.Count(r => r == dungeon.ExitRoom) == 1);
             // all rooms are reachable from the startroom:
             Forall(dungeon.Rooms, r => dungeon.StartRoom.ReachableRooms().Contains(r));
+            // start and exit rooms have capacity 0:
+            Assert.IsTrue(dungeon.StartRoom.Capacity == 0);
+            Assert.IsTrue(dungeon.ExitRoom.Capacity == 0);
+            // rooms neighbouring the exit room have maximum capacity:
+            foreach (var (room, dir) in dungeon.ExitRoom.Neighbors)
+            {
+                Assert.IsTrue(room.Capacity == capacity);
+            }
         }
     }
 }
