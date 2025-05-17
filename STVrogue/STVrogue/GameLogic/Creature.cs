@@ -133,7 +133,12 @@ namespace STVrogue.GameLogic
             base.Move(r);
             Location = r;
         }
-        
+
+        public override void Attack(Creature foe)
+        {
+            base.Attack(foe);
+        }
+
         /// <summary>
         /// Use the given item. We also pass the current turn-number at which
         /// this action happens.

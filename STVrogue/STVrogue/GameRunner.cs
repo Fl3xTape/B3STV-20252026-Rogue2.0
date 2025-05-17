@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using STVrogue.GameLogic;
 using STVrogue.TestInfrastructure;
@@ -82,7 +83,8 @@ namespace STVrogue
         public Judgement Run(TemporalProperty<Game> phi)
         {
             // Don't write directly to system-console. Use methods from game.GameConsole:
-            _game.GameConsole.WriteLines(" _______ _________            _______  _______  _______           _______ ",
+            _game.GameConsole.WriteLines
+            (" _______ _________            _______  _______  _______           _______ ",
                "(  ____ \\\\__   __/|\\     /|  (  ____ )(  ___  )(  ____ \\|\\     /|(  ____ \\",
                "| (    \\/   ) (   | )   ( |  | (    )|| (   ) || (    \\/| )   ( || (    \\/",
                "| (_____    | |   | |   | |  | (____)|| |   | || |      | |   | || (__    ",
@@ -140,7 +142,8 @@ namespace STVrogue
                         catch(Exception e) { }
                         break;
                     case 'a':
-                        command = new Command(CommandType.ATTACK, "");
+                        string arg = GetUserOrTestAgentString();
+                        command = new Command(CommandType.ATTACK, arg);
                         break;
                     case 'u':
                         command = new Command(CommandType.USE, "") ;
@@ -249,6 +252,10 @@ namespace STVrogue
                 return _game.GameConsole.ReadKey();
             }
         }
-        
+
+        string GetUserOrTestAgentString()
+        {
+            return Console.ReadLine();
+        }
     }
 }

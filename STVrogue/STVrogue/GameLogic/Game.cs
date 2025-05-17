@@ -121,7 +121,21 @@ namespace STVrogue.GameLogic
             r.Items.Add(new HealingPotion("H1",2));
             return true;
         }
-        
+
+        public bool Move(Creature c)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Attack(string creatureId)
+        {
+            if (Player.Location.Creatures.Count == 0) return false; // No monsters in the room.
+            
+            Creature monster = (from c in Player.Location.Creatures where c.Id == creatureId select c).First();
+            Player.Attack(monster);
+
+            return true;
+        }
 
         /// <summary>
         /// Cause a creature to flee a combat. This will take the creature to a neighboring
@@ -151,7 +165,8 @@ namespace STVrogue.GameLogic
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
                     Player.Move(roomToMoveTo);
                     break;
-                case CommandType.ATTACK :
+                case CommandType.ATTACK:
+                    Attack(playerAction.Args[0]);
                     break;
                 case CommandType.FLEE:
                     break;
