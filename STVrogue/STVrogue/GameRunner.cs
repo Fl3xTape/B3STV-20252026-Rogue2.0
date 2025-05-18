@@ -144,16 +144,15 @@ namespace STVrogue
                     case 'a':
                         try
                         {
-                            if (_game.Player.Location.NumberOfMonsters != 0)
-                            {   
-                                _game.GameConsole.WriteLines("Which monster to attack? " + string.Join("|", monsters));
-                                string target = _game.GameConsole.ReadLine();
-                                command = new Command(CommandType.ATTACK, target) ;
-                            }
-                            else
-                            {
+                            if (_game.Player.Location.Items.Count == 0)
+                            { 
                                 _game.GameConsole.WriteLines("No monsters in this room to attack.");
+                                break;
                             }
+                            
+                            _game.GameConsole.WriteLines("Which monster to attack? " + string.Join("|", monsters));
+                            string target = _game.GameConsole.ReadLine();
+                            command = new Command(CommandType.ATTACK, target);
                         }
                         catch(Exception e) { }
                         
@@ -165,7 +164,19 @@ namespace STVrogue
                         command = new Command(CommandType.FLEE, "");
                         break;
                     case 'p':
-                        command = new Command(CommandType.PICKUP, "");
+                        try
+                        {
+                            if (_game.Player.Location.NumberOfMonsters == 0)
+                            {   
+                                _game.GameConsole.WriteLines("No items to pick-up.");
+                                break;
+                            }
+                            _game.GameConsole.WriteLines("Which item to pick-up? " + string.Join("|", items));
+                            string target = _game.GameConsole.ReadLine();
+                            command = new Command(CommandType.PICKUP, target) ;
+                        }
+                        catch(Exception e) { }
+                        
                         break;
                     case ' ':
                         command = new Command(CommandType.DoNOTHING, "");

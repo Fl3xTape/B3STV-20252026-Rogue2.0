@@ -101,14 +101,14 @@ namespace STVrogue.GameLogic
 
     public class Player : Creature
     {
-        public Player(string id, string name) : base(id,name,20,1)
+        public Player(string id, string name) : base(id, name, 20, 1)
         {
             // change the behavior if you want players to have different HP and AR,
             // or if you want to add more properties to the player.
         }
 
         #region getters setters
-        
+
         /// <summary>
         /// The player's kill-point. Should never be negative.
         /// </summary>
@@ -118,14 +118,14 @@ namespace STVrogue.GameLogic
         /// The player's bag, containing all items the player has picked up
         /// (and has not used).
         /// </summary>
-        public List<Item> Bag { get ; } =  new List<Item>();
+        public List<Item> Bag { get; } = new List<Item>();
 
         /// <summary>
         /// True if the player is enraged. The player enters this state whenever it uses a rage potion.
         /// The effect last for 5 turns including the turn when the potion is used.
         /// </summary>
         public bool Enraged { get; set; } = false;
-        
+
         #endregion
 
         public override void Move(Room r)
@@ -147,6 +147,20 @@ namespace STVrogue.GameLogic
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Pick up an item in the current room. The item has to be in the room as the player\
+        /// for this action to be allowed.
+        /// </summary>
+        public void Pickup(int turnNr, Item i)
+        {
+            if (! Location.Items.Exists(n => n == i))
+            {
+                throw new ArgumentException();
+            }
+            
+            Location.Items.Remove(i);
+            Bag.Add(i);
+        }
     }
-    
 }
