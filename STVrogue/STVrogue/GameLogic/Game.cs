@@ -115,11 +115,19 @@ namespace STVrogue.GameLogic
             // dummy implemetation that just put some monsters and pots in the room after-after
             // the start room
             Room r = Dungeon.Rooms[2];
-            r.Creatures.Add(new Monster("M0", "Goblin"));
-            r.Creatures.Add(new Monster("M1", "Orc"));
+            r.Creatures.Add(AddMonsterToRoom(r, "M0", "Goblin"));
+            r.Creatures.Add(AddMonsterToRoom(r, "M1", "Orc"));
+
             r.Items.Add(new HealingPotion("H0",2));
             r.Items.Add(new HealingPotion("H1",2));
             return true;
+        }
+
+        Creature AddMonsterToRoom(Room r, string id, string name)
+        {
+            Monster m = new Monster(id, name);
+            m.Location = r;
+            return m;
         }
 
         public bool Move(Creature c)
@@ -166,7 +174,9 @@ namespace STVrogue.GameLogic
                     Player.Move(roomToMoveTo);
                     break;
                 case CommandType.ATTACK:
-                    Attack(playerAction.Args[0]);
+                    string monsterId = playerAction.Args[0];
+                    Creature monster = (from c in Player.Location.Creatures where c.Id == monsterId select c).First();
+                    Player.Attack(monster);
                     break;
                 case CommandType.FLEE:
                     break;

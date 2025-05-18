@@ -142,8 +142,21 @@ namespace STVrogue
                         catch(Exception e) { }
                         break;
                     case 'a':
-                        string arg = GetUserOrTestAgentString();
-                        command = new Command(CommandType.ATTACK, arg);
+                        try
+                        {
+                            if (_game.Player.Location.NumberOfMonsters != 0)
+                            {   
+                                _game.GameConsole.WriteLines("Which monster to attack? " + string.Join("|", monsters));
+                                string target = _game.GameConsole.ReadLine();
+                                command = new Command(CommandType.ATTACK, target) ;
+                            }
+                            else
+                            {
+                                _game.GameConsole.WriteLines("No monsters in this room to attack.");
+                            }
+                        }
+                        catch(Exception e) { }
+                        
                         break;
                     case 'u':
                         command = new Command(CommandType.USE, "") ;
@@ -251,11 +264,6 @@ namespace STVrogue
             {
                 return _game.GameConsole.ReadKey();
             }
-        }
-
-        string GetUserOrTestAgentString()
-        {
-            return Console.ReadLine();
         }
     }
 }
