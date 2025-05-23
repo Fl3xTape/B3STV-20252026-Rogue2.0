@@ -18,8 +18,27 @@ public class TestAgent
     /// from the game and the current game state as input.
     /// </summary>
     public virtual char NextAction(List<string> consoleOutput, Game gameState) {
-            // This is a test agent that always returns ' ' as the next action.
-            // You can replace this with your own logic to determine the next action.
-            throw new NotImplementedException("TestAgent.NextAction is not implemented.");
+        // This is the completely random text agent. only excluding the quit command.
+        int rand = new Random().Next(0, 6);
+        
+        switch (rand)
+        {
+            case 0:
+                return ' ';
+            case 1:
+                return 'm';
+            case 2:
+                return 'p';
+            case 3:
+                return 'a';
+            case 4:
+                return 'f';
+            case 5:
+                return 'u';
+            //case 6: lets not make the ai randomly quit
+                //return 'q';
+        }
+        
+        throw new NotImplementedException("Not supposed to reach here");
     }
 }

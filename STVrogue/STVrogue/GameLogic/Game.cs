@@ -157,6 +157,10 @@ namespace STVrogue.GameLogic
                     break;
                 case CommandType.DoNOTHING:
                     break;
+                case CommandType.PICKUP:
+                    break;
+                case CommandType.USE:
+                    break;
             }
             TurnNumber++;
         }
