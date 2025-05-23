@@ -70,6 +70,9 @@ namespace STVrogue.GameLogic
             if (numberOfRooms < 3)
                 throw new ArgumentException("A linear dungeon should have at least three rooms.");
             
+            if (maximumRoomCapacity < 1)
+                throw new ArgumentException("A dungeon should have at least one capacity.");
+            
             Room prev = null;
             Room r = null;
             for (int k = 0 ; k<numberOfRooms; k++)
@@ -77,21 +80,29 @@ namespace STVrogue.GameLogic
                 int capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
                 if (k == 0)
                 {
+                    capacity = 0;
                     r = new Room("R" + k, RoomType.STARTroom, capacity); 
                     StartRoom = r;
                     prev = r;
                 }
                 else if (k == numberOfRooms - 1)
                 {
+                    capacity = 0;
                     r = new Room("R" + k, RoomType.EXITroom, capacity);
                     ExitRoom = r;
+                    prev.Connect(r, Direction.EAST);
+                    prev = r;
+                }
+                else if (k == numberOfRooms - 2)
+                {
+                    capacity = maximumRoomCapacity;
+                    r = new Room("R" + k, RoomType.ORDINARYroom, capacity);
                     prev.Connect(r, Direction.EAST);
                     prev = r;
                 }
                 else
                 {
                     r = new Room("R" + k, RoomType.ORDINARYroom, capacity);
-                    ExitRoom = r;
                     prev.Connect(r, Direction.EAST);
                     prev = r;
                 }
@@ -106,7 +117,10 @@ namespace STVrogue.GameLogic
         {   
             if (numberOfRooms < 5)
                 throw new ArgumentException("A tree-shaped dungeon should have at least five rooms.");
-
+            
+            if (maximumRoomCapacity < 1)
+                throw new ArgumentException("A dungeon should have at least one capacity.");
+            
             // we will create the start-room, then we will breadth-firstly expand it to a tree.
             
             // list to be used as fifo-queue for the breadth-first expansion:
@@ -123,7 +137,12 @@ namespace STVrogue.GameLogic
                 int numOfChildrenToAdd = Math.Min(branchingDegree, numberOfRooms - Rooms.Count);
                 for (int k = 0; k < numOfChildrenToAdd; k++)
                 {
-                    int capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    int capacity = 0;
+                    if (Rooms.Count + 1 < numberOfRooms)
+                    {
+                        capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    }
+          
                     Room childRoom = new Room("R" + Rooms.Count, RoomType.ORDINARYroom, capacity);
                     Direction dir = Direction.NORTH;
                     switch (k % branchingDegree)
@@ -139,6 +158,22 @@ namespace STVrogue.GameLogic
             }
             // now we have a tree with N rooms. We need to make the last room the exit-room.
             ExitRoom = Rooms[Rooms.Count - 1];
+            // the neighbours of this exit room should be recreated with maximum capacity:
+            foreach ((Room,Direction) n in ExitRoom.Neighbors.ToList())
+            {
+                Room room = n.Item1;
+                Room newRoom = new Room(room.Id, room.RoomType, maximumRoomCapacity);
+                // disconnect room from neighbours and connect new one
+                foreach ((Room,Direction) m in room.Neighbors.ToList())
+                {
+                    Room neighborRoom = m.Item1;
+                    Direction neighborDir = m.Item2;
+                    neighborRoom.Disconnect(room);
+                    neighborRoom.Connect(newRoom, Opposite(neighborDir));
+                }
+                Rooms.Remove(room);
+                Rooms.Add(newRoom);
+            }
         }
         
         /// <summary>
@@ -150,6 +185,9 @@ namespace STVrogue.GameLogic
             if (numberOfRooms < 4)
                 throw new ArgumentException("A grid-dungeon should have at least five rooms.");
             
+            if (maximumRoomCapacity < 1)
+                throw new ArgumentException("A dungeon should have at least one capacity.");
+            
             int numOfColumn = (int) Math.Sqrt((double)numberOfRooms) ;
             int numOfRow = numberOfRooms / numOfColumn ;
             if (numberOfRooms % numOfColumn != 0)
@@ -157,11 +195,26 @@ namespace STVrogue.GameLogic
                 numOfRow++;
             }
             Room[ , ] created = new Room[numOfColumn, numOfRow] ;
+            
+            // calculate the exit room coords to identify neighbours:
+            int exitK = (numberOfRooms - 1) / numOfRow;
+            int exitJ = (numberOfRooms - 1) % numOfRow;
             for (int k = 0; k < numOfColumn; k++)
             {
                 for (int j = 0; j < numOfRow && Rooms.Count < numberOfRooms; j++)
                 {
-                    int capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    bool isNeighborOfExit =
+                        (k == exitK - 1 && j == exitJ) || // west
+                        (k == exitK && j == exitJ - 1);  // north
+
+                    int capacity;
+                    if ((k == 0 && j == 0) || (Rooms.Count + 1 == numberOfRooms)) 
+                        capacity = 0;
+                    else if (isNeighborOfExit)
+                        capacity = maximumRoomCapacity; 
+                    else
+                        capacity = randomGenerator.NextInt(maximumRoomCapacity) + 1 ; // kutu note
+                    
                     created[k,j] = new Room("R" + (k*numOfRow+j), RoomType.ORDINARYroom, capacity);
                     Rooms.Add(created[k,j]);
                     // make the last added room to be the exit room:
@@ -171,17 +224,22 @@ namespace STVrogue.GameLogic
             // make the (0,0) to be the start-room:
             StartRoom = created[0, 0];
             // connect the rooms to form a 2D grid:
-            for (int k = 1; k < numOfColumn; k++)
+            for (int k = 0; k < numOfColumn; k++)
             {
-                for (int j = 1; j < numOfRow; j++)
+                for (int j = 0; j < numOfRow; j++)
                 {
                     if (created[k,j] == null)
                         continue;
-                    created[k,j].Connect(created[k-1,j], Direction.WEST);
-                    created[k,j].Connect(created[k,j-1], Direction.NORTH);
+                    if (k < numOfColumn - 1 && created[k+1,j] != null)
+                    {
+                        created[k,j].Connect(created[k+1,j], Direction.EAST);
+                    }
+                    if (j < numOfRow - 1 && created[k,j+1] != null)
+                    {
+                        created[k,j].Connect(created[k,j+1], Direction.SOUTH);
+                    }
                 }
             }
-            //done
         }
 
         #region additional getters
@@ -204,6 +262,21 @@ namespace STVrogue.GameLogic
         }
         #endregion
         
+        Direction Opposite(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.EAST:
+                    return Direction.WEST;
+                case Direction.WEST:
+                    return Direction.EAST;
+                case Direction.NORTH:
+                    return Direction.SOUTH;
+                case Direction.SOUTH:
+                    return Direction.NORTH;
+            }
+            throw new Exception("Invalid direction");
+        }
     }
 
     [Serializable()]
@@ -228,6 +301,8 @@ namespace STVrogue.GameLogic
     {
         NORTH, EAST, SOUTH, WEST
     }
+    
+    
 
     /// <summary>
     /// Representing a room in a dungeon.
