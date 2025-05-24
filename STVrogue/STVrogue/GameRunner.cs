@@ -112,6 +112,9 @@ namespace STVrogue
                 var neighbors = (from neighbor in _game.Player.Location.Neighbors 
                     select $"{neighbor.Item1.Id}({neighbor.Item2})").ToList();
                 
+                var bag = (from b in _game.Player.Bag
+                    select $"{b.GetType().Name} ({b.Id})").ToList() ;
+                
                 _game.GameConsole.WriteLines("",
                     $"TURN {_game.TurnNumber}",
                     $"You are in a room ({_game.Player.Location.Id}). It is dark, and it feels dangerous...",
@@ -120,7 +123,7 @@ namespace STVrogue
                     "Rooms to go: " + (neighbors.Count == 0 ? "Hmm.. looks like you are trapped." : string.Join(",", neighbors)),
                     "You are " + (_game.Player.Alive ? "alive" : "DEAD"), 
                     $"Your health: {_game.Player.Hp}, kill-counts: {_game.Player.Kp}",
-                    "In your bag: nothing/nada/zero :(",
+                    "In your bag: " + (bag.Count == 0 ? "nothing/nada/zero :(" : string.Join(",", bag)),
                     "Your action: Move(m)   | Pick-items(p) | Do-nothing(SPACE) | Quit(q)",
                     "             Attack(a) |    Flee(f)    | Use-item(u) ");
                 // determine what the user action is, and covert it to an instance of Command:
@@ -144,7 +147,7 @@ namespace STVrogue
                     case 'a':
                         try
                         {
-                            if (_game.Player.Location.Items.Count == 0)
+                            if (monsters.Count == 0)
                             { 
                                 _game.GameConsole.WriteLines("No monsters in this room to attack.");
                                 break;
@@ -158,7 +161,20 @@ namespace STVrogue
                         
                         break;
                     case 'u':
-                        command = new Command(CommandType.USE, "") ;
+                        try
+                        {
+                            if (bag.Count == 0)
+                            {
+                                _game.GameConsole.WriteLines("Your bag is empty.");
+                                break;
+                            }
+                            _game.GameConsole.WriteLines("Which item to use? " + string.Join("|", bag));
+                            string target = _game.GameConsole.ReadLine();
+                            command = new Command(CommandType.USE, target) ;
+                        }
+                        
+                        catch(Exception e) { }
+
                         break;
                     case 'f':
                         command = new Command(CommandType.FLEE, "");
@@ -166,7 +182,7 @@ namespace STVrogue
                     case 'p':
                         try
                         {
-                            if (_game.Player.Location.NumberOfMonsters == 0)
+                            if (items.Count == 0)
                             {   
                                 _game.GameConsole.WriteLines("No items to pick-up.");
                                 break;

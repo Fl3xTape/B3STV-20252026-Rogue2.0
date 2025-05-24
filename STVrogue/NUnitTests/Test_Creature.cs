@@ -66,5 +66,12 @@ namespace NUnitTests
             
             Assert.IsTrue(p.Hp == 19);
         }
+
+        [Test]
+        public void TestPlayerUse()
+        {
+            Player p = new Player("P0", "Player0");
+            p.Bag.Add( new HealingPotion("H0",2));
+        }
     }
 }

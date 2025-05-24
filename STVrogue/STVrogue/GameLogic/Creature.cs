@@ -125,7 +125,9 @@ namespace STVrogue.GameLogic
         /// True if the player is enraged. The player enters this state whenever it uses a rage potion.
         /// The effect last for 5 turns including the turn when the potion is used.
         /// </summary>
-        public bool Enraged { get; set; } = false;
+        /// 
+        public bool Enraged => EnragedTurns > 0;
+        public int EnragedTurns { get; set; } = 0;
 
         #endregion
 
@@ -146,22 +148,53 @@ namespace STVrogue.GameLogic
         /// </summary>
         public void Use(int turnNr, Item i)
         {
-            throw new NotImplementedException();
+            if (!Bag.Exists(n => n == i))
+            {
+                throw new ArgumentException("Item does not exist in the inventory.");
+            }
+            switch (i)
+            {
+                case HealingPotion hp:
+                    HealPlayer(hp);
+                    break;
+                case RagePotion rp:
+                    RagePlayer();
+                    break;
+            }
+            Bag.Remove(i);
         }
 
         /// <summary>
-        /// Pick up an item in the current room. The item has to be in the room as the player\
+        /// Pick up an item in the current room. The item has to be in the room as the player
         /// for this action to be allowed.
         /// </summary>
         public void Pickup(int turnNr, Item i)
         {
             if (! Location.Items.Exists(n => n == i))
             {
-                throw new ArgumentException();
+                throw new ArgumentException("Item does not exist in the room.");
             }
             
             Location.Items.Remove(i);
             Bag.Add(i);
+        }
+        
+        /// <summary>
+        /// Heals the player with a HealingPotion in its Bag.
+        /// </summary>
+        private void HealPlayer(HealingPotion potion)
+        {
+            if (Hp + potion.HealValue > HpMax)
+            {
+                Hp = HpMax;
+                return;
+            }
+            Hp += potion.HealValue;
+        }
+
+        private void RagePlayer()
+        {
+            EnragedTurns = 5;
         }
     }
 }
