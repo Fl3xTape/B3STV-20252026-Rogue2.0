@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using STVrogue.GameLogic;
 using STVrogue.TestInfrastructure;
@@ -82,7 +83,8 @@ namespace STVrogue
         public Judgement Run(TemporalProperty<Game> phi)
         {
             // Don't write directly to system-console. Use methods from game.GameConsole:
-            _game.GameConsole.WriteLines(" _______ _________            _______  _______  _______           _______ ",
+            _game.GameConsole.WriteLines
+            (" _______ _________            _______  _______  _______           _______ ",
                "(  ____ \\\\__   __/|\\     /|  (  ____ )(  ___  )(  ____ \\|\\     /|(  ____ \\",
                "| (    \\/   ) (   | )   ( |  | (    )|| (   ) || (    \\/| )   ( || (    \\/",
                "| (_____    | |   | |   | |  | (____)|| |   | || |      | |   | || (__    ",
@@ -140,7 +142,20 @@ namespace STVrogue
                         catch(Exception e) { }
                         break;
                     case 'a':
-                        command = new Command(CommandType.ATTACK, "");
+                        try
+                        {
+                            if (_game.Player.Location.Items.Count == 0)
+                            { 
+                                _game.GameConsole.WriteLines("No monsters in this room to attack.");
+                                break;
+                            }
+                            
+                            _game.GameConsole.WriteLines("Which monster to attack? " + string.Join("|", monsters));
+                            string target = _game.GameConsole.ReadLine();
+                            command = new Command(CommandType.ATTACK, target);
+                        }
+                        catch(Exception e) { }
+                        
                         break;
                     case 'u':
                         command = new Command(CommandType.USE, "") ;
@@ -149,7 +164,19 @@ namespace STVrogue
                         command = new Command(CommandType.FLEE, "");
                         break;
                     case 'p':
-                        command = new Command(CommandType.PICKUP, "");
+                        try
+                        {
+                            if (_game.Player.Location.NumberOfMonsters == 0)
+                            {   
+                                _game.GameConsole.WriteLines("No items to pick-up.");
+                                break;
+                            }
+                            _game.GameConsole.WriteLines("Which item to pick-up? " + string.Join("|", items));
+                            string target = _game.GameConsole.ReadLine();
+                            command = new Command(CommandType.PICKUP, target) ;
+                        }
+                        catch(Exception e) { }
+                        
                         break;
                     case ' ':
                         command = new Command(CommandType.DoNOTHING, "");
@@ -249,6 +276,5 @@ namespace STVrogue
                 return _game.GameConsole.ReadKey();
             }
         }
-        
     }
 }
