@@ -183,6 +183,9 @@ namespace STVrogue.GameLogic
                 case CommandType.DoNOTHING:
                     break;
                 case CommandType.PICKUP:
+                    string itemId = playerAction.Args[0];
+                    Item item = (from c in Player.Location.Items where c.Id == itemId select c).First();
+                    Player.Pickup(1, item);
                     break;
                 case CommandType.USE:
                     break;
