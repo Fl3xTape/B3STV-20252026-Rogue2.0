@@ -47,7 +47,8 @@ namespace STVrogue.GameLogic
         /// use a deterministic random generator. 
         /// </summary>
         public Dungeon(IRandomGenerator rnd, DungeonShapeType shape, int numberOfRooms, int maximumRoomCapacity) : base()
-        {   randomGenerator = rnd;
+        {   
+            randomGenerator = rnd;
             switch (shape)
             {
                 case DungeonShapeType.LINEAR:
