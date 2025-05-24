@@ -124,7 +124,9 @@ namespace STVrogue.GameLogic
         /// True if the player is enraged. The player enters this state whenever it uses a rage potion.
         /// The effect last for 5 turns including the turn when the potion is used.
         /// </summary>
-        public bool Enraged { get; set; } = false;
+        /// 
+        public bool Enraged => EnragedTurns > 0;
+        public int EnragedTurns { get; set; } = 0;
 
         #endregion
 
@@ -145,11 +147,10 @@ namespace STVrogue.GameLogic
         /// </summary>
         public void Use(int turnNr, Item i)
         {
-            if (Bag.Exists(n => n == i))
+            if (!Bag.Exists(n => n == i))
             {
                 throw new ArgumentException("Item does not exist in the inventory.");
             }
-
             switch (i)
             {
                 case HealingPotion hp:
@@ -188,6 +189,11 @@ namespace STVrogue.GameLogic
                 return;
             }
             Hp += potion.HealValue;
+        }
+
+        private void RagePlayer()
+        {
+            EnragedTurns = 5;
         }
     }
 }

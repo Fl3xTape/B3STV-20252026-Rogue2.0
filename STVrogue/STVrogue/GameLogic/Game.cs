@@ -164,18 +164,18 @@ namespace STVrogue.GameLogic
         /// The order in which creatures execute their actions is left for you to decide.
         /// </summary>
         public void Update(Command playerAction)
-        {
+        {                    
+            string args = playerAction.Args[0];
             switch (playerAction.Name)
             {
-                case CommandType.MOVE:
-                    string roomId = playerAction.Args[0];
+
+            case CommandType.MOVE:
                     // dummy logic for move-to:
-                    Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
+                    Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == args select r).First();
                     Player.Move(roomToMoveTo);
                     break;
                 case CommandType.ATTACK:
-                    string monsterId = playerAction.Args[0];
-                    Creature monster = (from c in Player.Location.Creatures where c.Id == monsterId select c).First();
+                    Creature monster = (from c in Player.Location.Creatures where c.Id == args select c).First();
                     Player.Attack(monster);
                     break;
                 case CommandType.FLEE:
@@ -183,11 +183,12 @@ namespace STVrogue.GameLogic
                 case CommandType.DoNOTHING:
                     break;
                 case CommandType.PICKUP:
-                    string itemId = playerAction.Args[0];
-                    Item item = (from c in Player.Location.Items where c.Id == itemId select c).First();
-                    Player.Pickup(1, item);
+                    Item itemPick = (from i in Player.Location.Items where i.Id == args select i).First();
+                    Player.Pickup(TurnNumber, itemPick);
                     break;
                 case CommandType.USE:
+                    Item itemBag = (from i in Player.Bag where i.Id == args select i).First();
+                    Player.Use(TurnNumber, itemBag);
                     break;
             }
             TurnNumber++;
