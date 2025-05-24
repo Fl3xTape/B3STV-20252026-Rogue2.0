@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using STVrogue.GameLogic;
 
 namespace STVrogue;
 
 public class RandomTestAgent : TestAgent
 {
-    public RandomTestAgent() {
-
+    private int _amountOfActions;
+    
+    public RandomTestAgent(int amountOfActions) {
+        _amountOfActions = amountOfActions;
     }
     
+    // completely random agent that performs a random action until it runs out of actions.
     public override char NextAction(List<string> consoleOutput, Game gameState) {
-        // This is the completely random text agent. only excluding the quit command.
+        if (_amountOfActions <= 0)
+        {
+            return 'q';
+        }
+        _amountOfActions--;
+        
         int rand = new Random().Next(0, 6);
         
         switch (rand)
@@ -29,8 +36,6 @@ public class RandomTestAgent : TestAgent
                 return 'f';
             case 5:
                 return 'u';
-            //case 6: lets not make the ai randomly quit
-            //return 'q';
         }
         
         throw new NotImplementedException("Not supposed to reach here");
