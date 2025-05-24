@@ -52,8 +52,16 @@ namespace STVrogue.GameLogic
         {
             if (! Location.Neighbors.Exists(n => n.Item1 == r))
             {
-                throw new ArgumentException();
+                return; // cannot move to a non-neighboring room
             }
+            if (r.Creatures.Count >= r.Capacity) // kutu note
+            {
+                return; // cannot move to a room that is full
+            }
+            
+            r.Creatures.Add(this);
+            Location.Creatures.Remove(this);
+            Location = r;
         }
         
         /// <summary>
@@ -89,13 +97,6 @@ namespace STVrogue.GameLogic
         public override void Move(Room r)
         {
             base.Move(r);
-            if (r.NumberOfMonsters > r.Capacity) // kutu note
-            {
-                throw new ArgumentException();
-            }
-            r.Creatures.Add(this);
-            Location.Creatures.Remove(this);
-            Location = r;
         }
     }
 
