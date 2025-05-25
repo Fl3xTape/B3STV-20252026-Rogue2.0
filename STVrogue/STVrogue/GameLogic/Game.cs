@@ -167,21 +167,37 @@ namespace STVrogue.GameLogic
         /// </summary>
         public void Update(Command playerAction)
         {
+            string args = playerAction.Args[0];
+            GameConsole console = new GameConsole();
             switch (playerAction.Name)
             {
                 case CommandType.MOVE:
                     string roomId = playerAction.Args[0];
-                    // dummy logic for move-to:
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
                     Player.Move(roomToMoveTo);
                     break;
+                
                 case CommandType.ATTACK:
+                    Creature monster = (from c in Player.Location.Creatures where c.Id == args select c).First();
+                    Player.Attack(monster);
+                    console.WriteLines($"You dealt {Player.AttackRating} damage. {monster.Name}: {monster.Hp}/{monster.HpMax}HP");
                     break;
+                
+                case CommandType.PICKUP:
+                    Item itemPick = (from i in Player.Location.Items where i.Id == args select i).First();
+                    Player.Pickup(TurnNumber, itemPick);
+                    break;
+                
+                case CommandType.USE:
+                    Item itemBag = (from i in Player.Bag where i.Id == args select i).First();
+                    Player.Use(TurnNumber, itemBag);
+                    break;
+                
                 case CommandType.FLEE:
-                    string roomIdf = playerAction.Args[0];
-                    Room roomToMoveTof = (from r in Dungeon.Rooms where r.Id == roomIdf select r).First();
+                    Room roomToMoveTof = (from r in Dungeon.Rooms where r.Id == args select r).First();
                     if (Flee(Player)) Player.Move(roomToMoveTof);
                     break;
+                
                 case CommandType.DoNOTHING:
                     break;
             }

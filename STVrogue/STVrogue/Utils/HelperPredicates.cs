@@ -189,6 +189,8 @@ namespace STVrogue.Utils
         {
             if (!HasUniqueStartAndExit(dungeon)) return false;
             if (!AllReachableFromStart(dungeon)) return false;
+
+            return true;
         }
         
     }
