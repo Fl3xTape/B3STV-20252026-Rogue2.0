@@ -119,6 +119,7 @@ namespace STVrogue.GameLogic
 
             // TODO: Says this is always true.. but that isn't the case, is it?
             // If the seed keeps failing, and k reaches 0, then we exit the loop, too.
+            
             if (seedSuccess)
             {
                 Dungeon = d;
@@ -130,7 +131,6 @@ namespace STVrogue.GameLogic
             }
         }
         
-
         /// <summary>
         /// Cause a creature to flee a combat. This will take the creature to a neighboring
         /// room. This should not breach the capacity of that room. Note that fleeing a
@@ -164,21 +164,39 @@ namespace STVrogue.GameLogic
         /// The order in which creatures execute their actions is left for you to decide.
         /// </summary>
         public void Update(Command playerAction)
-        {
+        { 
+            string args = playerAction.Args[0];
+            GameConsole console = new GameConsole();
             switch (playerAction.Name)
             {
                 case CommandType.MOVE:
                     string roomId = playerAction.Args[0];
-                    // dummy logic for move-to:
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
                     Player.Move(roomToMoveTo);
                     break;
+                
                 case CommandType.ATTACK:
+                    Creature monster = (from c in Player.Location.Creatures where c.Id == args select c).First();
+                    Player.Attack(monster);
+                    console.WriteLines($"You dealt {Player.AttackRating} damage. {monster.Name}: {monster.Hp}/{monster.HpMax}HP");
                     break;
+                
+                case CommandType.PICKUP:
+                    Item itemPick = (from i in Player.Location.Items where i.Id == args select i).First();
+                    Player.Pickup(TurnNumber, itemPick);
+                    break;
+                
+                case CommandType.USE:
+                    Item itemBag = (from i in Player.Bag where i.Id == args select i).First();
+                    Player.Use(TurnNumber, itemBag);
+                    break;
+                
                 case CommandType.FLEE:
                     break;
+                
                 case CommandType.DoNOTHING:
                     break;
+                
             }
             TurnNumber++;
         }

@@ -69,7 +69,7 @@ namespace STVrogue.GameLogic
         {
             return true;
         }
-        
+
         /// <summary>
         /// Attack the given foe. This is only possible if this creature is alive and
         /// if the foe is in the same room as this creature.
@@ -78,15 +78,26 @@ namespace STVrogue.GameLogic
         /// </summary>
         public virtual void Attack(Creature foe)
         {
-            if (!Alive 
-                || Location != foe.Location 
+            if (!Alive
+                || Location != foe.Location
                 || !foe.Alive)
             {
                 throw new ArgumentException();
             }
-            foe.Hp = Math.Max(0,foe.Hp - AttackRating);
+
+            if (Location == null || foe.Location == null)
+            {
+                throw new ArgumentException();
+            }
+
+            if (foe.Hp - AttackRating <= 0)
+            {
+                foe.Hp = 0;
+                return;
+            }
+
+            foe.Hp = Math.Max(0, foe.Hp - AttackRating);
         }
-       
     }
 
     /// <summary>
@@ -159,6 +170,10 @@ namespace STVrogue.GameLogic
         public override void Attack(Creature foe)
         {
             base.Attack(foe);
+            if (!foe.Alive)
+            {
+                foe.Location.Creatures.Remove(this);
+            }
         }
 
         /// <summary>
