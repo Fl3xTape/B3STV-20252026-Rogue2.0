@@ -76,50 +76,58 @@ namespace STVrogue.GameLogic
         /// </summary>
         public Game(GameConfiguration conf) 
         {
-            // A dummy implementation that ignores the configuration. You should fix this
-            // by implementing this constructor according to its description in the Project
-            // Document.
-            Player = new Player("P0", "Bagginssess");
+            if (conf.NumberOfRooms < 3) 
+                throw new ArgumentOutOfRangeException("Number of rooms is too little");
+            if (conf.MaxRoomCapacity <= 0)
+                throw new ArgumentOutOfRangeException("Capacity has to be greater than 0");
+            
             Config = conf;
+            int k = 10;     // amount of retries we will do before failing the constructor.
+            bool seedSuccess = false;
+            
             STVControlledRandom.SetSeed(conf.RndSeed);
-            STVLogger.Log(">>> Creating an instance of Game, but ignoring the passed configuration. Fix this.");
-            // Dummy implementation that always creates a linear dungeon of 4 rooms with
-            // some monsters and item
-            Dungeon = new Dungeon(this.rnd, DungeonShapeType.LINEAR, 4, 2);
-            Player.Location = Dungeon.StartRoom;
-            SeedMonstersAndItems(2, 2, 2);
-        }
-        
-        /// <summary>
-        /// THIS IS A DUMMY IMPLEMENTAION. you are expected to implement
-        /// this method according to the description in the Project Document.
-        /// 
-        /// <para></para>
-        /// Populate the dungeon in this Game with the specified number of monsters and items.
-        ///
-        /// <para></para>
-        /// The monsters and items are dropped in random locations. Keep in mind that
-        /// the number of monsters in a room should not exceed the room's capacity.
-        /// There are also other constraints; see the Project Document.
-        /// <para></para>
-        /// Note that it is not always possible to populate the dungeon according to
-        /// the specified parameters. E.g. in a dungeon with N rooms whose capacity
-        /// are between 0 and k, it is definitely not possible to populate it with
-        /// more than (N-2)*k monsters.
-        /// <para></para>
-        /// The method returns true if it manages to populate the dungeon as specified,
-        /// else it returns false.
-        /// </summary>
-        bool SeedMonstersAndItems(int numberOfMonster, int numberOfHealingPotion, int numberOfRagePotion)
-        {
-            // dummy implemetation that just put some monsters and pots in the room after-after
-            // the start room
-            Room r = Dungeon.Rooms[2];
-            r.Creatures.Add(new Monster("M0", "Goblin"));
-            r.Creatures.Add(new Monster("M1", "Orc"));
-            r.Items.Add(new HealingPotion("H0",2));
-            r.Items.Add(new HealingPotion("H1",2));
-            return true;
+
+            Player = new Player("0", "Bagginssess");
+            
+            Dungeon d = null;
+
+            while (!seedSuccess && k > 0)
+            {
+                d = new Dungeon(this.rnd, 
+                    conf.DungeonShape, 
+                    conf.NumberOfRooms, 
+                    conf.MaxRoomCapacity);
+
+                try
+                {
+                    seedSuccess = d.SeedMonstersAndItems(this.rnd,
+                        conf.InitialNumberOfMonsters,
+                        conf.InitialNumberOfHealingPots,
+                        conf.InitialNumberOfRagePots);
+                }
+                catch
+                {
+                    
+                }
+
+                Player.Hp = Player.HpMax;
+                Player.Location = d.StartRoom;
+
+                k--;
+                // if seed was succesful, we now exit the while-loop. Otherwise, we keep retrying until k = 0.
+            }
+
+            // TODO: Says this is always true.. but that isn't the case, is it?
+            // If the seed keeps failing, and k reaches 0, then we exit the loop, too.
+            if (seedSuccess)
+            {
+                Dungeon = d;
+                
+            }
+            else
+            {
+                throw new ApplicationException("Seed unsuccesful");
+            }
         }
         
 
@@ -131,7 +139,21 @@ namespace STVrogue.GameLogic
         /// </summary>
         public bool Flee(Creature c)
         {
-            throw new NotImplementedException();
+            if (!Player.Location.Creatures.Any())
+            {
+                // GameConsole.WriteLines("      You are not in combat.");
+                return false;
+            }
+            else if (c.Flee(this, rnd))
+            {
+                // GameConsole.WriteLines("      We knew you are a coward.");
+                return true;
+            }
+            else
+            {
+                // GameConsole.WriteLines("      Your flee failed.");    
+                return false; 
+            }
         }
 
         /// <summary>
@@ -151,7 +173,7 @@ namespace STVrogue.GameLogic
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
                     Player.Move(roomToMoveTo);
                     break;
-                case CommandType.ATTACK :
+                case CommandType.ATTACK:
                     break;
                 case CommandType.FLEE:
                     break;

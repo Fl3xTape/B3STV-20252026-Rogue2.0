@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using STVrogue.Utils;
 
 
 namespace STVrogue.GameLogic
@@ -55,6 +56,11 @@ namespace STVrogue.GameLogic
                 throw new ArgumentException();
             }
         }
+
+        public virtual bool Flee(Game game, IRandomGenerator rnd)
+        {
+            return true;
+        }
         
         /// <summary>
         /// Attack the given foe. This is only possible if this creature is alive and
@@ -97,9 +103,22 @@ namespace STVrogue.GameLogic
             Location.Creatures.Remove(this);
             Location = r;
         }
+
+        public override bool Flee(Game game, IRandomGenerator rnd)
+        {
+            // Find all neighbours with capacity 
+            List<Room> AcceptableRooms = 
+                this.Location.ReachableRooms().FindAll(r => r.Capacity > r.NumberOfMonsters);
+            
+            if (AcceptableRooms.Count == 0) return false;
+
+            this.Move(AcceptableRooms[rnd.NextInt(AcceptableRooms.Count)]);
+            return true;
+        }
     }
 
-    public class Player : Creature
+    public class 
+        Player : Creature
     {
         public Player(string id, string name) : base(id,name,20,1)
         {
@@ -141,6 +160,17 @@ namespace STVrogue.GameLogic
         public void Use(int turnNr, Item i)
         {
             throw new NotImplementedException();
+        }
+
+        public override bool Flee(Game game, IRandomGenerator rnd)
+        {
+            if (game.Config.DifficultyMode == DifficultyMode.ELITEmode ||
+                game.Config.DifficultyMode == DifficultyMode.NORMALmode)
+            {
+                
+            }
+
+            return true;
         }
     }
     
