@@ -48,8 +48,10 @@ namespace NUnitTests
         {
             Room room = new Room("room", RoomType.ORDINARYroom, 5);
             Player p = new Player("P0", "Player0");
-            Monster m = new Monster("M0", "Monster0");
+            p.Location = room;
             
+            Monster m = new Monster("M0", "Monster0");
+            m.Location = room;
             p.Attack(m);
             
             Assert.IsTrue(m.Hp == 2);
@@ -60,18 +62,39 @@ namespace NUnitTests
         {
             Room room = new Room("room", RoomType.ORDINARYroom, 5);
             Player p = new Player("P0", "Player0");
+            p.Location = room;
+
             Monster m = new Monster("M0", "Monster0");
-            
+            m.Location = room;
             m.Attack(p);
             
             Assert.IsTrue(p.Hp == 19);
         }
-
+        
+        /// <summary>
+        /// Still need to write test for potion use.
+        /// </summary>
         [Test]
         public void TestPlayerUse()
         {
             Player p = new Player("P0", "Player0");
             p.Bag.Add( new HealingPotion("H0",2));
+        }
+
+        [Test]
+        public void TestMonsterAlive()
+        {            
+            Room room = new Room("room", RoomType.ORDINARYroom, 5);
+            
+            Player p = new Player("P0", "Player0");
+            p.Location = room;
+            p.AttackRating = 10;
+            
+            Monster m = new Monster("M0", "Monster0");
+            m.Location = room;
+            
+            p.Attack(m);
+            Assert.IsTrue(!m.Alive);
         }
     }
 }
