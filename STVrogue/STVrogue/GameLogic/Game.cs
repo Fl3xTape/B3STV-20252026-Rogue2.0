@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using STVrogue.Utils;
 
@@ -76,7 +77,7 @@ namespace STVrogue.GameLogic
         /// Check out the other implementation of <see cref="IRandomGenerator"/>, namely
         /// <see cref="STVControlledRandom"/>, or else write your own implementation.
         /// </summary>
-        IRandomGenerator rnd = new RandomGenerator();
+        public IRandomGenerator rnd;
         //IRandomGenerator rnd = new STVControlledRandom();
         
         #endregion
@@ -89,6 +90,7 @@ namespace STVrogue.GameLogic
         public Game(GameConfiguration conf) 
         {
             RandomGenerator.SetSeed(conf.RndSeed);
+            
             rnd = RandomGenerator.Instance;
 
             if (conf.NumberOfRooms < 3) 
@@ -117,12 +119,6 @@ namespace STVrogue.GameLogic
                     conf.DungeonShape, 
                     conf.NumberOfRooms, 
                     conf.MaxRoomCapacity);
-
-
-                seedSuccess = d.SeedMonstersAndItems(this.rnd,
-                    conf.InitialNumberOfMonsters,
-                    conf.InitialNumberOfHealingPots,
-                    conf.InitialNumberOfRagePots);
                 
                 seedSuccess = d.SeedMonstersAndItems(this.rnd,
                     conf.InitialNumberOfMonsters,
@@ -237,7 +233,7 @@ namespace STVrogue.GameLogic
                     break;
             }
 
-            UpdateCreatures();
+            //UpdateCreatures();
             TurnNumber++;
             if (Player.TurnsUntilFlee > 0) Player.TurnsUntilFlee--;
         }
@@ -245,16 +241,15 @@ namespace STVrogue.GameLogic
         {
             foreach (Monster m in Creatures)
             {
-                while (true)
-                {
-                    rnd = RandomGenerator.Instance;
-                    rnd.NextInt(4);
-                    break;
-                }
+                rnd = RandomGenerator.Instance;
+                int move = rnd.NextInt(4);
+
+                bool canFlee = Flee(m);
+                
                 
                 // Before going into the switch case. We must know whether the monster is in combat or not.
                 
-                switch (rnd.NextInt(4))
+                switch (move)
                 {
                     case 1: // Do nothing
                         break;
@@ -264,10 +259,15 @@ namespace STVrogue.GameLogic
                         break;
                     
                     case 3: // Move
-                        
+                        m.Move(new Room("PLACEHOLDER", RoomType.EXITroom, 0));
                         break;
                     
                     case 4: // Flee
+                        if (Flee(m))
+                        {
+                            m.Flee(this, rnd);
+                        }
+                        
                         break;
                 }
             }

@@ -55,12 +55,7 @@ namespace STVrogue.GameLogic
             {
                 return; // cannot move to a non-neighboring room
             }
-            if (r.Creatures.Count >= r.Capacity) // kutu note
-            {
-                return; // cannot move to a room that is full
-            }
-            
-            Location.Creatures.Remove(this);
+
             Location = r;
         }
 
@@ -107,12 +102,21 @@ namespace STVrogue.GameLogic
     {
         public Monster(string id, string name) : base(id,name,3,1)
         {
+            
             // change the behavior if you want monsters to have different HP and AR
         }
         
         public override void Move(Room r)
         {
+            
+            if (r.Creatures.Count >= r.Capacity) // kutu note
+            {
+                return; // cannot move to a room that is full
+            }
+            
             base.Move(r);
+
+            Location.Creatures.Remove(this);
             r.Creatures.Add(this);
         }
 
