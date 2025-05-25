@@ -194,6 +194,8 @@ namespace STVrogue.GameLogic
         /// </summary>
         public void Update(Command playerAction)
         {
+            bool success = false;
+            
             string args = playerAction.Args[0];
 
             GameConsole console = new GameConsole();
@@ -203,7 +205,11 @@ namespace STVrogue.GameLogic
                 case CommandType.MOVE:
                     string roomId = playerAction.Args[0];
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
-                    if (Move(Player)) Player.Move(roomToMoveTo);
+                    if (Move(Player))
+                    {
+                        Player.Move(roomToMoveTo);
+                        success = true;
+                    }
                     break;
 
                 case CommandType.ATTACK:
@@ -211,41 +217,53 @@ namespace STVrogue.GameLogic
                     Player.Attack(monster);
                     console.WriteLines(
                         $"You dealt {Player.AttackRating} damage. {monster.Name}: {monster.Hp}/{monster.HpMax}HP");
+                    success = true;
                     break;
 
                 case CommandType.PICKUP:
                     Item itemPick = (from i in Player.Location.Items where i.Id == args select i).First();
                     Player.Pickup(TurnNumber, itemPick);
+                    success = true;
                     break;
 
                 case CommandType.USE:
                     Item itemBag = (from i in Player.Bag where i.Id == args select i).First();
                     Player.Use(TurnNumber, itemBag);
                     Player.TurnsUntilFlee = 2;
+                    success = true;
                     break;
 
                 case CommandType.FLEE:
                     Room roomToMoveTof = (from r in Dungeon.Rooms where r.Id == args select r).First();
-                    if (Flee(Player)) Player.Move(roomToMoveTof);
+                    if (Flee(Player))
+                    {
+                        Player.Move(roomToMoveTof);
+                        success = true;
+                    }
                     break;
 
                 case CommandType.DoNOTHING:
+                    success = true;
                     break;
             }
 
-            //UpdateCreatures();
-            TurnNumber++;
-            if (Player.TurnsUntilFlee > 0) Player.TurnsUntilFlee--;
+            if (success)
+            {
+                UpdateCreatures();
+                TurnNumber++;
+                if (Player.TurnsUntilFlee > 0) Player.TurnsUntilFlee--;
+            }
         }
         void UpdateCreatures()
         {
             foreach (Monster m in Creatures)
             {
-                rnd = RandomGenerator.Instance;
-                int move = rnd.NextInt(4);
-
-                bool canFlee = Flee(m);
-                
+                while (true)
+                {
+                    rnd = RandomGenerator.Instance;
+                    rnd.NextInt(4);
+                    break;
+                }
                 
                 // Before going into the switch case. We must know whether the monster is in combat or not.
                 
