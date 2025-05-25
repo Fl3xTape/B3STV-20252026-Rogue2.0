@@ -157,7 +157,7 @@ namespace STVrogue.GameLogic
                 // GameConsole.WriteLines("      You are not in combat.");
                 return false;
             }
-            else if (c.Flee(this, rnd))
+            else if (c.Flee(this))
             {
                 // GameConsole.WriteLines("      We knew you are a coward.");
                 return true;
@@ -194,6 +194,11 @@ namespace STVrogue.GameLogic
         /// </summary>
         public void Update(Command playerAction)
         {
+            if (!Player.Alive)
+            {
+                Gameover = true;
+            }
+            
             bool success = false;
             
             string args = playerAction.Args[0];
@@ -256,36 +261,30 @@ namespace STVrogue.GameLogic
         }
         void UpdateCreatures()
         {
-            foreach (Monster m in Creatures)
+            foreach (Monster m in Dungeon.Creatures)
             {
-                while (true)
-                {
-                    rnd = RandomGenerator.Instance;
-                    rnd.NextInt(4);
-                    break;
-                }
                 
-                // Before going into the switch case. We must know whether the monster is in combat or not.
+                int move = rnd.NextInt(2);
                 
                 switch (move)
                 {
-                    case 1: // Do nothing
+                    case 0: // Do nothing
                         break;
                     
-                    case 2: // Attack player
+                    case 1: // Attack player
                         m.Attack(Player);
                         break;
                     
-                    case 3: // Move
-                        m.Move(new Room("PLACEHOLDER", RoomType.EXITroom, 0));
-                        break;
-                    
-                    case 4: // Flee
-                        if (Flee(m))
+                    case 2: // Move
+                        bool hasFled = Flee(m);
+                        if (!hasFled)
                         {
-                            m.Flee(this, rnd);
+                            List<Room> AcceptableRooms = 
+                                m.Location.ReachableRooms().FindAll(r => r.Capacity > r.NumberOfMonsters);
+                            
+                            if (AcceptableRooms.Count == 0) break;
+                            m.Move(AcceptableRooms[rnd.NextInt(AcceptableRooms.Count)]);
                         }
-                        
                         break;
                 }
             }

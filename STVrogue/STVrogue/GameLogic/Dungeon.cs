@@ -385,6 +385,7 @@ namespace STVrogue.GameLogic
             Monster newMonster = new Monster("M" + Creatures.Count, "Monster");
             // this is automatically accounted for in  the Creatures-list of dungeon, when you call it.
             r.Creatures.Add(newMonster);
+            Creatures.Add(newMonster);
             newMonster.Location = r;
             //Console.WriteLine("Monster added to " + r.Id);
         }

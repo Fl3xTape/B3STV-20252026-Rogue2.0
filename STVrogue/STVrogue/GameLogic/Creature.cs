@@ -59,7 +59,7 @@ namespace STVrogue.GameLogic
             Location = r;
         }
 
-        public virtual bool Flee(Game game, IRandomGenerator rnd)
+        public virtual bool Flee(Game game)
         {
             return false;
         }
@@ -76,12 +76,12 @@ namespace STVrogue.GameLogic
                 || Location != foe.Location
                 || !foe.Alive)
             {
-                throw new ArgumentException();
+                return;
             }
 
             if (Location == null || foe.Location == null)
             {
-                throw new ArgumentException();
+                return;
             }
 
             if (foe.Hp - AttackRating <= 0)
@@ -120,8 +120,9 @@ namespace STVrogue.GameLogic
             r.Creatures.Add(this);
         }
 
-        public override bool Flee(Game game, IRandomGenerator rnd)
+        public override bool Flee(Game game)
         {
+            IRandomGenerator rnd = RandomGenerator.Instance;
             // Find all neighbours with capacity 
             List<Room> AcceptableRooms = 
                 this.Location.ReachableRooms().FindAll(r => r.Capacity > r.NumberOfMonsters);
@@ -240,7 +241,7 @@ namespace STVrogue.GameLogic
             EnragedTurns = 5;
         }
 
-        public override bool Flee(Game game, IRandomGenerator rnd)
+        public override bool Flee(Game game)
         {
             if (game.Config.DifficultyMode == DifficultyMode.ELITEmode ||
                 game.Config.DifficultyMode == DifficultyMode.NORMALmode)
