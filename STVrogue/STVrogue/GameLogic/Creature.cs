@@ -252,7 +252,14 @@ namespace STVrogue.GameLogic
                 
                 return false;
             }
+            
+            // Find all neighbours with capacity 
+            List<Room> AcceptableRooms = 
+                this.Location.ReachableRooms().FindAll(r => r.RoomType != RoomType.EXITroom);
+            
+            if (AcceptableRooms.Count == 0) return false;
 
+            this.Move(AcceptableRooms[rnd.NextInt(AcceptableRooms.Count)]);
             return true;
         }
     }

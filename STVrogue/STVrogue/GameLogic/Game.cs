@@ -81,12 +81,18 @@ namespace STVrogue.GameLogic
         //IRandomGenerator rnd = new STVControlledRandom();
         
         #endregion
-        
+
         /// <summary>
         /// Try to create an instance of Game satisfying the specified configuration.
         /// It should throw an exception if it does not manage to generate a dungeon
         /// satisfying the configuration.
         /// </summary>
+
+        public Game()
+        {
+            
+        }
+        
         public Game(GameConfiguration conf) 
         {
             RandomGenerator.SetSeed(conf.RndSeed);
@@ -239,10 +245,8 @@ namespace STVrogue.GameLogic
                     break;
 
                 case CommandType.FLEE:
-                    Room roomToMoveTof = (from r in Dungeon.Rooms where r.Id == args select r).First();
                     if (Flee(Player))
                     {
-                        Player.Move(roomToMoveTof);
                         success = true;
                     }
                     break;
