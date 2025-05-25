@@ -23,6 +23,18 @@ namespace STVrogue.GameLogic
         public List<Room> Rooms { get; } = new List<Room>();
         public Room StartRoom { get; set; }
         public Room ExitRoom { get; set; }
+
+        /// <summary>
+        /// Return all creatures in the Dungeon. The player is excluded.
+        /// </summary>
+        public List<Creature> Creatures { get; } = new List<Creature>();
+
+        /// <summary>
+        /// Return all items in this Dungeon. The items in the player's bag
+        /// are excluded.
+        /// </summary>
+        /// 
+        public List<Item> Items { get; } = new List<Item>();
         
         IRandomGenerator randomGenerator;
 
@@ -371,8 +383,6 @@ namespace STVrogue.GameLogic
         {
             // id equal index. if list is empty, id=0. If list has 10 other elements, ids start at 0, so id=10
             Monster newMonster = new Monster("M" + Creatures.Count, "Monster");
-            newMonster.Hp = 10;
-            newMonster.AttackRating = 10;
             // this is automatically accounted for in  the Creatures-list of dungeon, when you call it.
             r.Creatures.Add(newMonster);
             newMonster.Location = r;
@@ -397,22 +407,8 @@ namespace STVrogue.GameLogic
 
         #region additional getters
 
-        /// <summary>
-        /// Return all creatures in the Dungeon. The player is excluded.
-        /// </summary>
-        public List<Creature> Creatures
-        {
-            get => throw new NotImplementedException();
-        }
 
-        /// <summary>
-        /// Return all items in this Dungeon. The items in the player's bag
-        /// are excluded.
-        /// </summary>
-        public List<Item> Items
-        {
-            get => throw new NotImplementedException();
-        }
+        
         #endregion
         
         Direction Opposite(Direction dir)

@@ -60,7 +60,6 @@ namespace STVrogue.GameLogic
                 return; // cannot move to a room that is full
             }
             
-            r.Creatures.Add(this);
             Location.Creatures.Remove(this);
             Location = r;
         }
@@ -114,6 +113,7 @@ namespace STVrogue.GameLogic
         public override void Move(Room r)
         {
             base.Move(r);
+            r.Creatures.Add(this);
         }
 
         public override bool Flee(Game game, IRandomGenerator rnd)
@@ -175,7 +175,8 @@ namespace STVrogue.GameLogic
             base.Attack(foe);
             if (!foe.Alive)
             {
-                foe.Location.Creatures.Remove(this);
+                Kp++;
+                foe.Location.Creatures.Remove(foe);
             }
         }
 

@@ -3,7 +3,6 @@ using System;
 
 namespace STVrogue.Utils
 {
-    
     /// <summary>
     /// A generic interface for a random generator.
     /// </summary>
@@ -25,33 +24,76 @@ namespace STVrogue.Utils
         /// </summary>
         public double NextDouble();
     }
-
+    
     /// <summary>
     /// An implementation of <see cref="IRandomGenerator"/>. This implementation
-    /// just wraps around <see cref="Random"/>. You can set its seed, but it does
-    /// not implement the Singleton pattern.
+    /// wraps around <see cref="Random"/> and implements the Singleton pattern.
+    /// You can optionally set its seed once during initialization.
     /// </summary>
     public class RandomGenerator : IRandomGenerator
-    {
+    {   
+        private static RandomGenerator? instance = null;
+        private static readonly object lockObj = new object();
 
-        int? seed = null;
-        Random rnd;
-        
-        public RandomGenerator()
+        private int? seed = null;
+        private Random rnd;
+
+        // Private constructor to prevent external instantiation
+        private RandomGenerator()
         {
             rnd = new Random();
         }
 
-        public RandomGenerator(int seed)
+        private RandomGenerator(int seed)
         {
             rnd = new Random(seed);
             this.seed = seed;
         }
+
+        /// <summary>
+        /// Access the singleton instance. If not initialized, it will create an instance without a seed.
+        /// </summary>
+        public static RandomGenerator Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (lockObj)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new RandomGenerator();
+                        }
+                    }
+                }
+                return instance;
+            }
+        }
+
+        /// <summary>
+        /// Optionally initialize the singleton with a seed. Call this before accessing <see cref="Instance"/>.
+        /// </summary>
+        public static void SetSeed(int seed)
+        {
+            lock (lockObj)
+            {
+                if (instance == null)
+                {
+                    instance = new RandomGenerator(seed);
+                }
+                else
+                {
+                    throw new InvalidOperationException("RandomGenerator has already been initialized.");
+                }
+            }
+        }
+
         public int Seed()
         {
             if (seed == null)
                 throw new Exception("The seed is unknown");
-            return (int) seed;
+            return (int)seed;
         }
 
         public int NextInt(int maxvalue)

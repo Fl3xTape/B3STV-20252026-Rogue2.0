@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using STVrogue.Utils;
 
@@ -42,6 +43,18 @@ namespace STVrogue.GameLogic
         /// To count the number of passed turns. 
         /// </summary>
         public int TurnNumber { get; private set; } 
+        
+        /// <summary>
+        /// Return all creatures in the Dungeon. The player is excluded.
+        /// </summary>
+        public List<Creature> Creatures { get; } = new List<Creature>();
+
+        /// <summary>
+        /// Return all items in this Dungeon. The items in the player's bag
+        /// are excluded.
+        /// </summary>
+        ///
+        public List<Item> Items { get; } = new List<Item>();
 
         
         /// <summary>
@@ -64,7 +77,8 @@ namespace STVrogue.GameLogic
         /// Check out the other implementation of <see cref="IRandomGenerator"/>, namely
         /// <see cref="STVControlledRandom"/>, or else write your own implementation.
         /// </summary>
-        IRandomGenerator rnd = new RandomGenerator();
+        public IRandomGenerator rnd;
+        
         //IRandomGenerator rnd = new STVControlledRandom();
         
         #endregion
@@ -76,6 +90,9 @@ namespace STVrogue.GameLogic
         /// </summary>
         public Game(GameConfiguration conf) 
         {
+            RandomGenerator.SetSeed(conf.RndSeed);
+            rnd = RandomGenerator.Instance;
+
             if (conf.NumberOfRooms < 3) 
                 throw new ArgumentOutOfRangeException("Number of rooms is too little");
             if (conf.NumberOfRooms < 4 && conf.DungeonShape == DungeonShapeType.GRID) 
@@ -89,7 +106,8 @@ namespace STVrogue.GameLogic
             int k = 10;     // amount of retries we will do before failing the constructor.
             bool seedSuccess = false;
             
-            STVControlledRandom.SetSeed(conf.RndSeed);
+
+            //STVControlledRandom.SetSeed(conf.RndSeed);
 
             Player = new Player("0", "Bagginssess");
             
@@ -102,18 +120,12 @@ namespace STVrogue.GameLogic
                     conf.NumberOfRooms, 
                     conf.MaxRoomCapacity);
 
-                try
-                {
-                    seedSuccess = d.SeedMonstersAndItems(this.rnd,
-                        conf.InitialNumberOfMonsters,
-                        conf.InitialNumberOfHealingPots,
-                        conf.InitialNumberOfRagePots);
-                }
-                catch
-                {
-                    
-                }
 
+                seedSuccess = d.SeedMonstersAndItems(this.rnd,
+                    conf.InitialNumberOfMonsters,
+                    conf.InitialNumberOfHealingPots,
+                    conf.InitialNumberOfRagePots);
+                
                 Player.Hp = Player.HpMax;
                 Player.Location = d.StartRoom;
 
@@ -168,7 +180,9 @@ namespace STVrogue.GameLogic
         public void Update(Command playerAction)
         {
             string args = playerAction.Args[0];
+
             GameConsole console = new GameConsole();
+
             switch (playerAction.Name)
             {
                 case CommandType.MOVE:
@@ -176,33 +190,67 @@ namespace STVrogue.GameLogic
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
                     Player.Move(roomToMoveTo);
                     break;
-                
+
                 case CommandType.ATTACK:
                     Creature monster = (from c in Player.Location.Creatures where c.Id == args select c).First();
                     Player.Attack(monster);
-                    console.WriteLines($"You dealt {Player.AttackRating} damage. {monster.Name}: {monster.Hp}/{monster.HpMax}HP");
+                    console.WriteLines(
+                        $"You dealt {Player.AttackRating} damage. {monster.Name}: {monster.Hp}/{monster.HpMax}HP");
                     break;
-                
+
                 case CommandType.PICKUP:
                     Item itemPick = (from i in Player.Location.Items where i.Id == args select i).First();
                     Player.Pickup(TurnNumber, itemPick);
                     break;
-                
+
                 case CommandType.USE:
                     Item itemBag = (from i in Player.Bag where i.Id == args select i).First();
                     Player.Use(TurnNumber, itemBag);
                     break;
-                
+
                 case CommandType.FLEE:
                     Room roomToMoveTof = (from r in Dungeon.Rooms where r.Id == args select r).First();
                     if (Flee(Player)) Player.Move(roomToMoveTof);
                     break;
-                
+
                 case CommandType.DoNOTHING:
                     break;
             }
+
+            UpdateCreatures();
             TurnNumber++;
             Player.TurnsUntilFlee--;
+        }
+        void UpdateCreatures()
+        {
+            foreach (Monster m in Creatures)
+            {
+                while (true)
+                {
+                    rnd = RandomGenerator.Instance;
+                    rnd.NextInt(4);
+                    break;
+                }
+                
+                // Before going into the switch case. We must know whether the monster is in combat or not.
+                
+                switch (rnd.NextInt(4))
+                {
+                    case 1: // Do nothing
+                        break;
+                    
+                    case 2: // Attack player
+                        m.Attack(Player);
+                        break;
+                    
+                    case 3: // Move
+                        
+                        break;
+                    
+                    case 4: // Flee
+                        break;
+                }
+            }
         }
     }
 }

@@ -8,9 +8,12 @@ using static STVrogue.Utils.HelperPredicates;
 
 namespace NUnitTests
 {
+    
     [TestFixture]
     public class Test_Dungeon
     {
+        private IRandomGenerator rnd;
+
         // This a parameterized test for the constructor of the Dungeon class, in particular for
         // the linear shaped dungeon. The test is parameterized over the number of rooms N and
         // the maximum capacity of the rooms.
@@ -20,22 +23,24 @@ namespace NUnitTests
         [TestCase(100, 100)] // testing consistency
         public void test_LinearDungeon(int N, int capacity)
         {
+            rnd = RandomGenerator.Instance;
+            
             // we cannot have a linear dungeon with less than 3 rooms
             if (N < 3)
             {
                 Assert.Throws<ArgumentException>(() =>
-                    new Dungeon(new RandomGenerator(123), DungeonShapeType.LINEAR, N, capacity));
+                    new Dungeon(rnd, DungeonShapeType.LINEAR, N, capacity));
                 return;
             }
             // we cannot have a dungeon with less than 1 maximum capacity
             if (capacity < 1)
             {
                 Assert.Throws<ArgumentException>(() =>
-                    new Dungeon(new RandomGenerator(123), DungeonShapeType.LINEAR, N, capacity));
+                    new Dungeon(rnd, DungeonShapeType.LINEAR, N, capacity));
                 return;
             }
 
-            Dungeon dungeon = new Dungeon(new RandomGenerator(123), DungeonShapeType.LINEAR, N, capacity);
+            Dungeon dungeon = new Dungeon(rnd, DungeonShapeType.LINEAR, N, capacity);
             // we have N rooms:
             Assert.IsTrue(dungeon.Rooms.Count == N);
             // each room has a unique ID:
@@ -69,23 +74,25 @@ namespace NUnitTests
         [TestCase(100, 100)] // testing consistency
         public void test_TreeDungeon(int N, int capacity)
         {
-
+            RandomGenerator.SetSeed(123);
+            rnd = RandomGenerator.Instance;
+            
             // we cannot have a tree dungeon with less than 5 rooms
             if (N < 5)
             {
                 Assert.Throws<ArgumentException>(() =>
-                    new Dungeon(new RandomGenerator(123), DungeonShapeType.TREE, N, capacity));
+                    new Dungeon(rnd, DungeonShapeType.TREE, N, capacity));
                 return;
             }
             // we cannot have a dungeon with less than 1 maximum capacity
             if (capacity < 1)
             {
                 Assert.Throws<ArgumentException>(() =>
-                    new Dungeon(new RandomGenerator(123), DungeonShapeType.TREE, N, capacity));
+                    new Dungeon(rnd, DungeonShapeType.TREE, N, capacity));
                 return;
             }
 
-            Dungeon dungeon = new Dungeon(new RandomGenerator(123), DungeonShapeType.TREE, N, capacity);
+            Dungeon dungeon = new Dungeon(rnd, DungeonShapeType.TREE, N, capacity);
             // we have N rooms:
             Assert.IsTrue(dungeon.Rooms.Count == N);
             // each room has a unique ID:
@@ -117,14 +124,18 @@ namespace NUnitTests
         [TestCase(4, 0)]     // not enough capacity (exception path)
         [TestCase(9, 2)]     // testing square grid
         [TestCase(10, 3)]    // testing row with 1 room where exit has only 1 neighbour
+        [TestCase(15, 3)]
         [TestCase(100, 100)] // testing consistency
         public void test_GridDungeon(int N, int capacity)
         {
+            RandomGenerator.SetSeed(123);
+            rnd = RandomGenerator.Instance;
+            
             // we cannot have a tree dungeon with less than 4 rooms
             if (N < 4)
             {
                 Assert.Throws<ArgumentException>(() =>
-                    new Dungeon(new RandomGenerator(123), DungeonShapeType.GRID, N, capacity));
+                    new Dungeon(rnd, DungeonShapeType.GRID, N, capacity));
                 return;
             }
 
@@ -132,11 +143,11 @@ namespace NUnitTests
             if (capacity < 1)
             {
                 Assert.Throws<ArgumentException>(() =>
-                    new Dungeon(new RandomGenerator(123), DungeonShapeType.GRID, N, capacity));
+                    new Dungeon(rnd, DungeonShapeType.GRID, N, capacity));
                 return;
             }
 
-            Dungeon dungeon = new Dungeon(new RandomGenerator(123), DungeonShapeType.GRID, N, capacity);
+            Dungeon dungeon = new Dungeon(rnd, DungeonShapeType.GRID, N, capacity);
             // we have N rooms:
             Assert.IsTrue(dungeon.Rooms.Count == N);
             // each room has a unique ID:
