@@ -133,7 +133,7 @@ namespace STVrogue.Utils
             // It is sufficient to check that the start and exit room has exactly one neighbor,
             // and all the other rooms have exactly two.
             // If one has less neighbor, or link to itself, some room will be unreachable, which
-            // contradict the previous assumotion.
+            // contradict the previous assumption.
             // More generally, if there is a cycle in the graph, since all rooms have at most two
             // neighbors, it will cause some room to be unreachable.
             return Forall(dungeon.Rooms, room =>
@@ -157,7 +157,29 @@ namespace STVrogue.Utils
         /// </summary>
         public static bool IsTree(Dungeon dungeon)
         {
-            throw new NotImplementedException();
+            if (!HasUniqueStartAndExit(dungeon)) return false;
+            if (!AllReachableFromStart(dungeon)) return false;
+            if (IsLinear(dungeon)) return false;
+            
+            List<Room> visited = new List<Room>();
+
+            return !HasCycle(dungeon.StartRoom, null, ref visited);
+        }
+
+        private static bool HasCycle(Room node, Room parent, ref List<Room> visited)
+        {
+            visited.Add(node);
+
+            foreach (Room child in node.ReachableRooms())
+            {
+                if (!visited.Contains(child))
+                {
+                    return HasCycle(child, node, ref visited);
+                }
+                else if (child != parent) return true;
+            }
+            
+            return false;
         }
         
         /// <summary>
@@ -165,7 +187,8 @@ namespace STVrogue.Utils
         /// </summary>
         public static bool IsGrid(Dungeon dungeon)
         {
-            throw new NotImplementedException();
+            if (!HasUniqueStartAndExit(dungeon)) return false;
+            if (!AllReachableFromStart(dungeon)) return false;
         }
         
     }

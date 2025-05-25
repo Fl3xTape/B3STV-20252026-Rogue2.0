@@ -67,7 +67,7 @@ namespace STVrogue.GameLogic
 
         public virtual bool Flee(Game game, IRandomGenerator rnd)
         {
-            return true;
+            return false;
         }
         
         /// <summary>
@@ -147,6 +147,9 @@ namespace STVrogue.GameLogic
         /// 
         public bool Enraged => EnragedTurns > 0;
         public int EnragedTurns { get; set; } = 0;
+        
+        // Amount of turns until able to use item again
+        public int TurnsUntilFlee = 0;
 
         #endregion
 
@@ -181,6 +184,7 @@ namespace STVrogue.GameLogic
                     break;
             }
             Bag.Remove(i);
+            TurnsUntilFlee = 2;
         }
 
         /// <summary>
@@ -221,7 +225,11 @@ namespace STVrogue.GameLogic
             if (game.Config.DifficultyMode == DifficultyMode.ELITEmode ||
                 game.Config.DifficultyMode == DifficultyMode.NORMALmode)
             {
+                if (Enraged && game.Config.DifficultyMode == DifficultyMode.ELITEmode) return false;
                 
+                if (TurnsUntilFlee <= 0) return true;
+                
+                return false;
             }
 
             return true;

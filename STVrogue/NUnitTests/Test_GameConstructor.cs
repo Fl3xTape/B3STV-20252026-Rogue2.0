@@ -29,7 +29,7 @@ namespace NUnitTests
             config.InitialNumberOfRagePots = R;
             config.DifficultyMode = dif;
 
-            if (N < 3 || y <= 0)
+            if (N < 3 || y <= 0 || (N < 4 && shape == DungeonShapeType.GRID) || (N < 5 && shape == DungeonShapeType.TREE))
             {
                 Game fail;
                 Assert.Throws<ArgumentOutOfRangeException>(() => fail = new Game(config));

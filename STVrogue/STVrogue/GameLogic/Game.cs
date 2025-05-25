@@ -78,6 +78,10 @@ namespace STVrogue.GameLogic
         {
             if (conf.NumberOfRooms < 3) 
                 throw new ArgumentOutOfRangeException("Number of rooms is too little");
+            if (conf.NumberOfRooms < 4 && conf.DungeonShape == DungeonShapeType.GRID) 
+                throw new ArgumentOutOfRangeException("Number of rooms is too little");
+            if (conf.NumberOfRooms < 5 && conf.DungeonShape == DungeonShapeType.TREE) 
+                throw new ArgumentOutOfRangeException("Number of rooms is too little");
             if (conf.MaxRoomCapacity <= 0)
                 throw new ArgumentOutOfRangeException("Capacity has to be greater than 0");
             
@@ -116,9 +120,7 @@ namespace STVrogue.GameLogic
                 k--;
                 // if seed was succesful, we now exit the while-loop. Otherwise, we keep retrying until k = 0.
             }
-
-            // TODO: Says this is always true.. but that isn't the case, is it?
-            // If the seed keeps failing, and k reaches 0, then we exit the loop, too.
+            
             if (seedSuccess)
             {
                 Dungeon = d;
@@ -176,11 +178,15 @@ namespace STVrogue.GameLogic
                 case CommandType.ATTACK:
                     break;
                 case CommandType.FLEE:
+                    string roomIdf = playerAction.Args[0];
+                    Room roomToMoveTof = (from r in Dungeon.Rooms where r.Id == roomIdf select r).First();
+                    if (Flee(Player)) Player.Move(roomToMoveTof);
                     break;
                 case CommandType.DoNOTHING:
                     break;
             }
             TurnNumber++;
+            Player.TurnsUntilFlee--;
         }
     }
 }

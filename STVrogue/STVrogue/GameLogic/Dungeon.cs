@@ -307,7 +307,7 @@ namespace STVrogue.GameLogic
             
             bool potionSuccess = false;
             int attemptsLeft = 300;   // arbitrary
-            while (!potionSuccess) // Outer loop,  retrie untill succes or attemtps run out
+            while (!potionSuccess) // Outer loop,  retry until success or attempts run out
             {
                 visited = new List<Room>(); // we empty this list when we retry.
                 int healingPotionsLeft = numberOfHealingPotion;
@@ -319,7 +319,7 @@ namespace STVrogue.GameLogic
                     List<Room> candidates = Rooms.Except(visited).ToList();
                     Room target = candidates[rnd.NextInt(candidates.Count)]; // randomly choose from candidates
                     
-                    // If none of the target-room's neighbours has a healingpotions, we add a healing potion here.
+                    // If none of the target-room's neighbours has a healing potions, we add a healing potion here.
                     if (healingPotionsLeft > 0 && !target.ReachableRooms().Any(n => n.Items.OfType<HealingPotion>().Any()))
                     {
                         if (target.Items.Count == 0)        // if there were not yet any items here, we count up.
