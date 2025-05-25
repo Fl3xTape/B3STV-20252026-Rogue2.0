@@ -64,7 +64,7 @@ namespace STVrogue.GameLogic
         /// Check out the other implementation of <see cref="IRandomGenerator"/>, namely
         /// <see cref="STVControlledRandom"/>, or else write your own implementation.
         /// </summary>
-        IRandomGenerator rnd = new RandomGenerator();
+        private IRandomGenerator rnd;
         //IRandomGenerator rnd = new STVControlledRandom();
         
         #endregion
@@ -81,11 +81,11 @@ namespace STVrogue.GameLogic
             // Document.
             Player = new Player("P0", "Bagginssess");
             Config = conf;
+            
+            this.rnd = new RandomGenerator(conf.RndSeed);
             STVControlledRandom.SetSeed(conf.RndSeed);
-            STVLogger.Log(">>> Creating an instance of Game, but ignoring the passed configuration. Fix this.");
-            // Dummy implementation that always creates a linear dungeon of 4 rooms with
-            // some monsters and item
-            Dungeon = new Dungeon(this.rnd, DungeonShapeType.LINEAR, 4, 2);
+
+            Dungeon = new Dungeon(this.rnd, conf.DungeonShape, conf.NumberOfRooms, conf.MaxRoomCapacity);
             Player.Location = Dungeon.StartRoom;
             SeedMonstersAndItems(2, 2, 2);
         }
@@ -166,6 +166,8 @@ namespace STVrogue.GameLogic
         public void Update(Command playerAction)
         {                    
             string args = playerAction.Args[0];
+            GameConsole console = new GameConsole();
+            
             switch (playerAction.Name)
             {
 
@@ -177,6 +179,7 @@ namespace STVrogue.GameLogic
                 case CommandType.ATTACK:
                     Creature monster = (from c in Player.Location.Creatures where c.Id == args select c).First();
                     Player.Attack(monster);
+                    console.WriteLines($"You dealt {Player.AttackRating} damage. {monster.Name}: {monster.Hp}/{monster.HpMax}HP");
                     break;
                 case CommandType.FLEE:
                     break;

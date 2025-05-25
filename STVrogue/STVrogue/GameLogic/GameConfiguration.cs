@@ -11,7 +11,7 @@ namespace STVrogue.GameLogic
     [Serializable()]
     public class GameConfiguration
     {
-        public int RndSeed = 311223 ;
+        public int RndSeed;
         public int NumberOfRooms;
         public int MaxRoomCapacity;
         public DungeonShapeType DungeonShape;

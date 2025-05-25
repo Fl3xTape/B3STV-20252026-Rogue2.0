@@ -1,1 +1,1 @@
-4321:10:3:RANDOMshape:5:1:1:NEWBIEmode
+4321:10:3:LINEARshape:5:1:1:NEWBIEmode
