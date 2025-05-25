@@ -113,7 +113,8 @@ namespace NUnitTests
             // rooms neighbouring the exit room have maximum capacity:
             Assert.IsTrue(Forall(dungeon.ExitRoom.Neighbors, x => x.Item1.Capacity == capacity));
             // dungeon may not contain a cycle, use DFS to check for cycles:
-            Assert.IsFalse(ContainsCycle(dungeon.StartRoom, null, new HashSet<Room>()));
+            HashSet<Room> visited = new HashSet<Room>();
+            Assert.IsFalse(HasCycle(dungeon.StartRoom, null, ref visited));
             // the dungeon is not linear, meaning there is a corner somewhere:
             Assert.IsTrue(dungeon.Rooms.Any(r => r.Neighbors.Count > 2 || r.Neighbors[0].Item2 != Opposite(r.Neighbors[1].Item2)));
             // exit room may only have 1 neighbour
@@ -184,20 +185,5 @@ namespace NUnitTests
             }
             throw new Exception("Invalid direction");
         }
-
-        // DFS to check for cycles in the dungeon
-        bool ContainsCycle(Room current, Room? parent, HashSet<Room> visited)
-        {
-            visited.Add(current);
-            foreach ((Room neighbor, _) in current.Neighbors)
-            {
-                if (neighbor == parent) continue;
-                if (visited.Contains(neighbor) || ContainsCycle(neighbor, current, visited))
-                    return true;
-            }
-            return false;
-        }
-        
-        
     }
 }
