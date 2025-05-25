@@ -75,7 +75,7 @@ namespace NUnitTests
             Assert.IsTrue(m1.Flee(game, new RandomGenerator()));
             
             // Flee the other monster to a full capacity room
-            Assert.IsTrue(m2.Flee(game, new RandomGenerator()));
+            Assert.IsFalse(m2.Flee(game, new RandomGenerator()));
         }
     }
     

@@ -161,12 +161,12 @@ namespace STVrogue.Utils
             if (!AllReachableFromStart(dungeon)) return false;
             if (IsLinear(dungeon)) return false;
             
-            List<Room> visited = new List<Room>();
+            HashSet<Room> visited = new HashSet<Room>();
 
             return !HasCycle(dungeon.StartRoom, null, ref visited);
         }
 
-        private static bool HasCycle(Room node, Room parent, ref List<Room> visited)
+        public static bool HasCycle(Room node, Room parent, ref HashSet<Room> visited)
         {
             visited.Add(node);
 
@@ -189,8 +189,11 @@ namespace STVrogue.Utils
         {
             if (!HasUniqueStartAndExit(dungeon)) return false;
             if (!AllReachableFromStart(dungeon)) return false;
+            
+            // Check there are no more than 5 corners
+            List<Room> corners = dungeon.Rooms.FindAll(room => room.ReachableRooms().Count < 3);
 
-            return true;
+            return corners.Count <= 5;
         }
         
     }

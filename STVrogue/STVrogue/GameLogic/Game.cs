@@ -102,17 +102,10 @@ namespace STVrogue.GameLogic
                     conf.NumberOfRooms, 
                     conf.MaxRoomCapacity);
 
-                try
-                {
-                    seedSuccess = d.SeedMonstersAndItems(this.rnd,
-                        conf.InitialNumberOfMonsters,
-                        conf.InitialNumberOfHealingPots,
-                        conf.InitialNumberOfRagePots);
-                }
-                catch
-                {
-                    
-                }
+                seedSuccess = d.SeedMonstersAndItems(this.rnd,
+                    conf.InitialNumberOfMonsters,
+                    conf.InitialNumberOfHealingPots,
+                    conf.InitialNumberOfRagePots);
 
                 Player.Hp = Player.HpMax;
                 Player.Location = d.StartRoom;
@@ -157,6 +150,22 @@ namespace STVrogue.GameLogic
                 return false; 
             }
         }
+        
+        public bool Move(Creature c)
+        {
+            if (!Player.Location.Creatures.Any())
+            {
+                return true;
+            }
+            else if (c.GetType() != typeof(Monster) && c.Location != Player.Location)
+            {
+                return true;
+            }
+            else
+            {  
+                return false; 
+            }
+        }
 
         /// <summary>
         /// Perform a single turn-update on the game. In every turn, each creature
@@ -174,7 +183,7 @@ namespace STVrogue.GameLogic
                 case CommandType.MOVE:
                     string roomId = playerAction.Args[0];
                     Room roomToMoveTo = (from r in Dungeon.Rooms where r.Id == roomId select r).First();
-                    Player.Move(roomToMoveTo);
+                    if (Move(Player)) Player.Move(roomToMoveTo);
                     break;
                 
                 case CommandType.ATTACK:
@@ -191,6 +200,7 @@ namespace STVrogue.GameLogic
                 case CommandType.USE:
                     Item itemBag = (from i in Player.Bag where i.Id == args select i).First();
                     Player.Use(TurnNumber, itemBag);
+                    Player.TurnsUntilFlee = 2;
                     break;
                 
                 case CommandType.FLEE:
@@ -202,7 +212,7 @@ namespace STVrogue.GameLogic
                     break;
             }
             TurnNumber++;
-            Player.TurnsUntilFlee--;
+            if (Player.TurnsUntilFlee > 0) Player.TurnsUntilFlee--;
         }
     }
 }
