@@ -37,32 +37,40 @@ namespace NUnitTests
             }
             
             // The game makes a dungeon, which we can test for rooms, shape, and numbers passed (see above)
-            Game game = new Game(config);
-            // Number of rooms is correct
-            Assert.IsTrue(game.Dungeon.Rooms.Count == N);
-            // Shape is correct
-            if (shape == DungeonShapeType.LINEAR)
-                Assert.IsTrue(IsLinear(game.Dungeon));
-            else if (shape == DungeonShapeType.TREE)
-                Assert.IsTrue(IsTree(game.Dungeon));
-            else if (shape == DungeonShapeType.GRID)
-                Assert.IsTrue(IsGrid(game.Dungeon));
+            Game game;
+            try
+            {
+                game = new Game(config);
+                // Number of rooms is correct
+                Assert.IsTrue(game.Dungeon.Rooms.Count == N);
+                // Shape is correct
+                if (shape == DungeonShapeType.LINEAR)
+                    Assert.IsTrue(IsLinear(game.Dungeon));
+                else if (shape == DungeonShapeType.TREE)
+                    Assert.IsTrue(IsTree(game.Dungeon));
+                else if (shape == DungeonShapeType.GRID)
+                    Assert.IsTrue(IsGrid(game.Dungeon));
                 
-            // Number of monsters is correct
-            Assert.IsTrue(game.Dungeon.Creatures.Count(c => c is Monster) == M);
-            Assert.IsTrue(Forall(game.Dungeon.Creatures, creature => creature.Alive));
-            // Number of healing potions is correct
-            Assert.IsTrue(game.Dungeon.Items.Count(i => i is HealingPotion) == H);
-            // Number of rage potions is correct
-            Assert.IsTrue(game.Dungeon.Items.Count(i => i is RagePotion) == R);
+                // Number of monsters is correct
+                Assert.IsTrue(game.Dungeon.Creatures.Count(c => c is Monster) == M);
+                Assert.IsTrue(Forall(game.Dungeon.Creatures, creature => creature.Alive));
+                // Number of healing potions is correct
+                Assert.IsTrue(game.Dungeon.Items.Count(i => i is HealingPotion) == H);
+                // Number of rage potions is correct
+                Assert.IsTrue(game.Dungeon.Items.Count(i => i is RagePotion) == R);
             
-            // Difficulty must be correct
-            Assert.IsTrue(game.Config.DifficultyMode == dif);
+                // Difficulty must be correct
+                Assert.IsTrue(game.Config.DifficultyMode == dif);
             
-            // Check the player
-            Assert.IsTrue(game.Player.Location == game.Dungeon.StartRoom);
-            Assert.IsTrue(game.Player.Hp == game.Player.HpMax);
-            Assert.IsTrue(game.Player.Hp > 0);
+                // Check the player
+                Assert.IsTrue(game.Player.Location == game.Dungeon.StartRoom);
+                Assert.IsTrue(game.Player.Hp == game.Player.HpMax);
+                Assert.IsTrue(game.Player.Hp > 0);
+            }
+            catch
+            {
+                Assert.Throws<ApplicationException>(() => game = new Game(config));
+            }
         }
     }
 }

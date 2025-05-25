@@ -278,13 +278,13 @@ namespace STVrogue.GameLogic
         public bool SeedMonstersAndItems(IRandomGenerator rnd, int numberOfMonster, int numberOfHealingPotion, int numberOfRagePotion)
         {
             if (numberOfHealingPotion < 0 || numberOfRagePotion < 0 || numberOfMonster < 0)
-                throw new ArgumentOutOfRangeException("Negative inputs are invalid");
+                return false;
             // Check if the monsters can even fit
             if(numberOfMonster > Rooms.Sum(r => r.Capacity))
-                throw new ArgumentException("More monsters than could fit in dungeon", "numberOfMonster");
+                return false;
             // Total number of healing potions can NOT exceed half the  number of rooms 
             if (numberOfHealingPotion + numberOfRagePotion > Rooms.Count/2)
-                throw new ArgumentException("More items than can fit in the dungeon", "numberOfHealingPotion");
+                return false;
             
             // Add monsters to rooms, starting with the rooms next to the exitroom
             int numMonstersLeft = numberOfMonster;
