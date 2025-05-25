@@ -58,4 +58,21 @@ public class Coba_TestAgent
         // (5) Run the main-loop:
         runner.Run();
     }
+    
+    [Test]
+    public void TestRandom()
+    {
+        STVLogger.Log(">>> Test");
+        // (1) reading the configuration of the game-level to generate
+        GameConfiguration conf = new GameConfiguration("rogueconfig.txt");
+        // (2) create an instance of a Game:
+        Game game = new Game(conf);
+        // create a test agent
+        TestAgent agent = new RandomTestAgent(100);
+        // (4) attach the Game and the test-agent to a runner. The runner contains the logic of the game's
+        // main-loop.
+        GameRunner runner = new GameRunner(game, new GameConsole(), agent);
+        // (5) Run the main-loop:
+        runner.Run();
+    }
 }

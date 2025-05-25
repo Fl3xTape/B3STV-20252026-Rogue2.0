@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using STVrogue.Utils;
 
 
 namespace STVrogue.GameLogic
@@ -52,8 +53,21 @@ namespace STVrogue.GameLogic
         {
             if (! Location.Neighbors.Exists(n => n.Item1 == r))
             {
-                throw new ArgumentException();
+                return; // cannot move to a non-neighboring room
             }
+            if (r.Creatures.Count >= r.Capacity) // kutu note
+            {
+                return; // cannot move to a room that is full
+            }
+            
+            r.Creatures.Add(this);
+            Location.Creatures.Remove(this);
+            Location = r;
+        }
+
+        public virtual bool Flee(Game game, IRandomGenerator rnd)
+        {
+            return true;
         }
         
         /// <summary>
@@ -89,17 +103,23 @@ namespace STVrogue.GameLogic
         public override void Move(Room r)
         {
             base.Move(r);
-            if (r.NumberOfMonsters > r.Capacity) // kutu note
-            {
-                throw new ArgumentException();
-            }
-            r.Creatures.Add(this);
-            Location.Creatures.Remove(this);
-            Location = r;
+        }
+
+        public override bool Flee(Game game, IRandomGenerator rnd)
+        {
+            // Find all neighbours with capacity 
+            List<Room> AcceptableRooms = 
+                this.Location.ReachableRooms().FindAll(r => r.Capacity > r.NumberOfMonsters);
+            
+            if (AcceptableRooms.Count == 0) return false;
+
+            this.Move(AcceptableRooms[rnd.NextInt(AcceptableRooms.Count)]);
+            return true;
         }
     }
 
-    public class Player : Creature
+    public class 
+        Player : Creature
     {
         public Player(string id, string name) : base(id, name, 20, 1)
         {
@@ -194,6 +214,17 @@ namespace STVrogue.GameLogic
         private void RagePlayer()
         {
             EnragedTurns = 5;
+        }
+
+        public override bool Flee(Game game, IRandomGenerator rnd)
+        {
+            if (game.Config.DifficultyMode == DifficultyMode.ELITEmode ||
+                game.Config.DifficultyMode == DifficultyMode.NORMALmode)
+            {
+                
+            }
+
+            return true;
         }
     }
 }

@@ -21,8 +21,8 @@ namespace STVrogue.GameLogic
         /// All rooms in the dungeon, including the start and exit rooms.
         /// </summary>
         public List<Room> Rooms { get; } = new List<Room>();
-        public Room StartRoom { get; protected set; }
-        public Room ExitRoom { get; protected set; }
+        public Room StartRoom { get; set; }
+        public Room ExitRoom { get; set; }
         
         IRandomGenerator randomGenerator;
 
@@ -47,7 +47,8 @@ namespace STVrogue.GameLogic
         /// use a deterministic random generator. 
         /// </summary>
         public Dungeon(IRandomGenerator rnd, DungeonShapeType shape, int numberOfRooms, int maximumRoomCapacity) : base()
-        {   randomGenerator = rnd;
+        {   
+            randomGenerator = rnd;
             switch (shape)
             {
                 case DungeonShapeType.LINEAR:
@@ -240,6 +241,158 @@ namespace STVrogue.GameLogic
                     }
                 }
             }
+        }
+        
+        /// <summary>
+        /// THIS IS A DUMMY IMPLEMENTAION. you are expected to implement
+        /// this method according to the description in the Project Document.
+        /// 
+        /// <para></para>
+        /// Populate the dungeon in this Game with the specified number of monsters and items.
+        ///
+        /// <para></para>
+        /// The monsters and items are dropped in random locations. Keep in mind that
+        /// the number of monsters in a room should not exceed the room's capacity.
+        /// There are also other constraints; see the Project Document.
+        /// <para></para>
+        /// Note that it is not always possible to populate the dungeon according to
+        /// the specified parameters. E.g. in a dungeon with N rooms whose capacity
+        /// are between 0 and k, it is definitely not possible to populate it with
+        /// more than (N-2)*k monsters.
+        /// <para></para>
+        /// The method returns true if it manages to populate the dungeon as specified,
+        /// else it returns false.
+        /// </summary>
+        public bool SeedMonstersAndItems(IRandomGenerator rnd, int numberOfMonster, int numberOfHealingPotion, int numberOfRagePotion)
+        {
+            if (numberOfHealingPotion < 0 || numberOfRagePotion < 0 || numberOfMonster < 0)
+                throw new ArgumentOutOfRangeException("Negative inputs are invalid");
+            // Check if the monsters can even fit
+            if(numberOfMonster > Rooms.Sum(r => r.Capacity))
+                throw new ArgumentException("More monsters than could fit in dungeon", "numberOfMonster");
+            // Total number of healing potions can NOT exceed half the  number of rooms 
+            if (numberOfHealingPotion + numberOfRagePotion > Rooms.Count/2)
+                throw new ArgumentException("More items than can fit in the dungeon", "numberOfHealingPotion");
+            
+            // Add monsters to rooms, starting with the rooms next to the exitroom
+            int numMonstersLeft = numberOfMonster;
+            while (numMonstersLeft > 0)
+            {
+                // Add 1 monster to each neighbour of the exitroom, so long as we dont go negative.
+                foreach (Room exitNeighbour in ExitRoom.ReachableRooms())
+                {
+                    if (numMonstersLeft > 0)
+                    {
+                        AddMonsterToRoom(exitNeighbour);
+                        numMonstersLeft--;
+                    }
+                }
+                // for every non-exitneighbour room with leftover capacity.. Add 1 while supplies last
+                foreach (Room other in 
+                         Rooms.Where(r => r.Capacity > r.Creatures.Count(c => c is Monster) 
+                                          && !r.ReachableRooms().Contains(ExitRoom)))
+                {
+                    if (numMonstersLeft > 0)
+                    {
+                        AddMonsterToRoom(other);
+                        numMonstersLeft--;
+                    }
+                }
+            }
+            
+            // Add potions to dungeon
+            int roomsWithItems = 0;
+            int maxRoomsWithItems = Rooms.Count / 2;
+            List<Room> visited;
+            
+            bool potionSuccess = false;
+            int attemptsLeft = 300;   // arbitrary
+            while (!potionSuccess) // Outer loop,  retrie untill succes or attemtps run out
+            {
+                visited = new List<Room>(); // we empty this list when we retry.
+                int healingPotionsLeft = numberOfHealingPotion;
+                int ragePotionsLeft = numberOfRagePotion;
+                
+                // Actual potion-distribution loop
+                while ((healingPotionsLeft > 0 || ragePotionsLeft > 0) && visited.Count < Rooms.Count)
+                {
+                    List<Room> candidates = Rooms.Except(visited).ToList();
+                    Room target = candidates[rnd.NextInt(candidates.Count)]; // randomly choose from candidates
+                    
+                    // If none of the target-room's neighbours has a healingpotions, we add a healing potion here.
+                    if (healingPotionsLeft > 0 && !target.ReachableRooms().Any(n => n.Items.OfType<HealingPotion>().Any()))
+                    {
+                        if (target.Items.Count == 0)        // if there were not yet any items here, we count up.
+                            roomsWithItems++;
+                        AddHealingPotion(target);           // only after that, do we add our new item.
+                        healingPotionsLeft--;               // we make sure to increment how many potions are left
+                    }
+                    // if the target-room is a non-exitroom (or start) leaf, we add a rage potion.
+                    if (ragePotionsLeft > 0 && target.ReachableRooms().Count == 1 && target.RoomType == RoomType.ORDINARYroom)
+                    {
+                        if (target.Items.Count == 0)        // if there were not yet any items here, we count up.
+                            roomsWithItems++;
+                        AddRagePotion(target);              // only after that, do we add our new item.
+                        ragePotionsLeft--;                  // we make sure to increment how many potions are left
+                    }
+                    
+                    visited.Add(target);                // We add the target-room to our list of visited rooms.
+                }
+                
+                // If we have no potions of any kind left to distribute, and we have not exceeded maxRoomsWithItems
+                if (healingPotionsLeft + ragePotionsLeft == 0 && roomsWithItems <= maxRoomsWithItems)
+                {
+                    potionSuccess = true;
+                    Console.WriteLine("Succesful distribution found.");
+                }
+                // otherwise, we have failed, and we will try again.. until our tries are up.
+                else
+                {
+                    foreach (Room r in visited)
+                    {
+                        // Remove the items from the rooms again
+                        r.Items.RemoveAll(i => i is HealingPotion || i is RagePotion);
+                    }
+                    attemptsLeft--;
+                    // If we have exceeded our attempts without finding a valid distribution, our seed must be invalid.
+
+                    if (attemptsLeft <= 0)
+                    {
+                        Console.WriteLine("No more attempts. failed");
+                        return false; 
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        void AddMonsterToRoom(Room r)
+        {
+            // id equal index. if list is empty, id=0. If list has 10 other elements, ids start at 0, so id=10
+            Monster newMonster = new Monster("M" + Creatures.Count, "Monster");
+            newMonster.Hp = 10;
+            newMonster.AttackRating = 10;
+            // this is automatically accounted for in  the Creatures-list of dungeon, when you call it.
+            r.Creatures.Add(newMonster);
+            newMonster.Location = r;
+            //Console.WriteLine("Monster added to " + r.Id);
+        }
+
+        void AddHealingPotion(Room r)
+        {
+            // id equal index. if list is empty, id=0. If list has 10 other elements, ids start at 0, so id=10
+            HealingPotion newPotion = new HealingPotion("I" + Items.Count, 10);
+            // this is automatically accounted for in the Item-list of dungeon, when you call it.
+            r.Items.Add(newPotion);
+        }
+        
+        void AddRagePotion(Room r)
+        {
+            // id equal index. if list is empty, id=0. If list has 10 other elements, ids start at 0, so id=10
+            RagePotion newPotion = new RagePotion("I" + Items.Count);
+            // this is automatically accounted for in the Item-list of dungeon, when you call it.
+            r.Items.Add(newPotion);
         }
 
         #region additional getters
