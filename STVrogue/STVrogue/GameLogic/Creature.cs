@@ -124,10 +124,9 @@ namespace STVrogue.GameLogic
 
         public override bool Flee(Game game)
         {
-            IRandomGenerator rnd = RandomGenerator.Instance;
             // Find all neighbours with capacity 
             List<Room> AcceptableRooms = 
-                this.Location.ReachableRooms().FindAll(r => r.Capacity > r.NumberOfMonsters);
+                this.Location.ReachableRooms().FindAll(r => r.Creatures.Count < r.Capacity && this.Location != r);
             
             if (AcceptableRooms.Count == 0) return false;
 
@@ -244,23 +243,29 @@ namespace STVrogue.GameLogic
 
         public override bool Flee(Game game)
         {
+            //The room cannot be itself and the room must not be an exit room.
+            List<Room> AcceptableRooms = 
+                this.Location.ReachableRooms().FindAll(r => r.RoomType != RoomType.EXITroom && this.Location != r);
+            
             if (game.Config.DifficultyMode == DifficultyMode.ELITEmode ||
                 game.Config.DifficultyMode == DifficultyMode.NORMALmode)
             {
                 if (Enraged && game.Config.DifficultyMode == DifficultyMode.ELITEmode) return false;
-                
-                if (TurnsUntilFlee <= 0) return true;
-                
-                return false;
+            }
+            else //NEWBIE MODE
+            {
+                this.Move(AcceptableRooms[rnd.NextInt(AcceptableRooms.Count)]);
+                return true;
             }
             
-            // Find all neighbours with capacity 
-            List<Room> AcceptableRooms = 
-                this.Location.ReachableRooms().FindAll(r => r.RoomType != RoomType.EXITroom);
+
             
             if (AcceptableRooms.Count == 0) return false;
+            
+            if (TurnsUntilFlee > 0) return false;
 
             this.Move(AcceptableRooms[rnd.NextInt(AcceptableRooms.Count)]);
+            
             return true;
         }
     }

@@ -6,30 +6,27 @@ namespace NUnitTests
 {
     class DummyGame : Game
     {
-        private GameConfiguration Config;
-        public DummyGame(GameConfiguration conf) : base()
+        public DummyGame(GameConfiguration config) : base()
         {
             RandomGenerator.SetSeed(0);
             rnd = RandomGenerator.Instance;
-            Config = conf;
-
-            Dungeon d = new Dungeon(rnd, DungeonShapeType.LINEAR, 3, 1);
-            Player p = new Player("0", "Bagginssess");
+            Config = config;
         }
     }
     
     [TestFixture]
     public class Test_Flee
     {
+        // r1 -- exit
+        // The player can't go to the end with Flee
         [Test]
-        public void Test_flee()
+        public void Test_flee_exit()
         {
             // Setup
-            var r1 = new Room("r1", RoomType.ORDINARYroom, 2);
-            var r2 = new Room("r2", RoomType.ORDINARYroom, 1);
-            var exit = new Room("exit", RoomType.EXITroom, 0);
+            Room r1 = new Room("r1", RoomType.ORDINARYroom, 1);
+            Room exit = new Room("exit", RoomType.EXITroom, 0);
             
-            r1.Connect(exit, Direction.SOUTH);
+            r1.Connect(exit, Direction.EAST);
             
             var dungeon = new DummyDungeon();
             
@@ -38,22 +35,34 @@ namespace NUnitTests
             dungeon.ExitRoom = exit;
             
             var player = new Player("P0", "Stitch");
-            var m1 = new Monster("m1", "Lilo");
             var config = new GameConfiguration();
             var game = new DummyGame(config);
             
-            m1.Location = r1;
             player.Location = r1;
             
-            // r1 -- exit
-            // The player can't go to the end with Flee
-            Assert.IsFalse(player.Flee(game)); // The generator is a required input, but unused
+            Assert.IsFalse(player.Flee(game));
             
-            r1.Disconnect(exit);
+            
+        }
+
+        [Test]
+        public void Test_flee()
+        {
+            Room r1 = new Room("r1", RoomType.ORDINARYroom, 1);
+            Room r2 = new Room("r2", RoomType.ORDINARYroom, 1);
+            
             r1.Connect(r2, Direction.EAST);
-            dungeon.Rooms.Add(r2);
-            dungeon.Rooms.Remove(exit);
             
+            var dungeon = new DummyDungeon();
+            
+            dungeon.Rooms.Add(r1);
+            dungeon.Rooms.Add(r2);
+            
+            var player = new Player("P0", "Stitch");
+            var config = new GameConfiguration();
+            var game = new DummyGame(config);
+            
+            player.Location = r1;
             // r1 -- r2
             // The player can flee in basic situations (didn't use item and not enraged and no exit to flee towards)
             // in every gamemode
@@ -65,7 +74,7 @@ namespace NUnitTests
             Assert.IsTrue(player.Flee(game));
             
             // The player can't flee in NormalMode and above if it just used an item
-            player.TurnsUntilFlee = 2; // Arbitrary, above 0
+            player.TurnsUntilFlee = 1; // Arbitrary, above 0
             config.DifficultyMode = DifficultyMode.NEWBIEmode;
             Assert.IsTrue(player.Flee(game));
             config.DifficultyMode = DifficultyMode.NORMALmode;
@@ -84,11 +93,14 @@ namespace NUnitTests
             Assert.IsFalse(player.Flee(game));
             
             // Add a monster to room 1 and test flee to room 2
-            var m2 = new Monster("m3", "Nani");
-            m2.Location = r1;
+            var m1 = new Monster("m1", "Omae wa mou shindeiru");
+            var m2 = new Monster("m2", "Nani");
+
+            m1.Location = r1;
             Assert.IsTrue(m1.Flee(game));
             
             // Flee the other monster to a full capacity room
+            m2.Location = r1;
             Assert.IsFalse(m2.Flee(game));
         }
     }

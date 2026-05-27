@@ -25,6 +25,14 @@ namespace STVrogue.GameLogic
         /// </summary>
         public GameConfiguration()
         {
+            RndSeed = 0;
+            NumberOfRooms = 3;
+            MaxRoomCapacity = 4;
+            DungeonShape = DungeonShapeType.LINEAR;
+            InitialNumberOfMonsters = 1;
+            InitialNumberOfHealingPots = 1;
+            InitialNumberOfRagePots = 1;
+            DifficultyMode = DifficultyMode.NORMALmode;
         }
 
         /// <summary>

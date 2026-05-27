@@ -31,7 +31,7 @@ namespace STVrogue.GameLogic
     {
         #region fields and properties
         
-        public GameConfiguration Config { get; private set; }
+        public GameConfiguration Config { get; set; }
         
         public Player Player { get ; private set; }
         
