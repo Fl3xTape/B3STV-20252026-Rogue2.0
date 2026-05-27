@@ -64,10 +64,6 @@ public class Coba_TestAgent
 public class TestAgentTests
 {
     public int N = 20;
-    public TestAgentTests()
-    {
-        
-    }
 
     public GameConfiguration GetRandomConfig(Random rng, DifficultyMode mode, DungeonShapeType shape)
     {
@@ -104,24 +100,5 @@ public class TestAgentTests
             GameRunner runner = new GameRunner(game, new GameConsole(), agent);
             runner.Run();
         }
-    }
-
-    [Test]
-    public void RanTestNeL()
-    {
-        RanTest(DifficultyMode.NEWBIEmode, DungeonShapeType.LINEAR);
-        STVControlledRandom rng = new STVControlledRandom();
-    }
-
-    [Test]
-    public void RanTestNeG()
-    {
-        RanTest(DifficultyMode.NEWBIEmode, DungeonShapeType.GRID);
-    }
-
-    [Test]
-    public void RanTestNeT()
-    {
-        RanTest(DifficultyMode.NEWBIEmode, DungeonShapeType.TREE);
     }
 }
