@@ -76,3 +76,69 @@ public class Coba_TestAgent
         runner.Run();
     }
 }
+
+[TestFixture]
+public class TestAgentTests
+{
+    public int N = 20;
+    public TestAgentTests()
+    {
+        
+    }
+
+    public GameConfiguration GetRandomConfig(Random rng, DifficultyMode mode, DungeonShapeType shape)
+    {
+        GameConfiguration config = new GameConfiguration();
+        config.DifficultyMode = mode;
+        config.DungeonShape = shape;
+        config.NumberOfRooms = 15;//rng.Next(20) + 15;
+        config.RndSeed = 1000;//rng.Next(int.MaxValue);
+        config.InitialNumberOfHealingPots = 1; //rng.Next(5) + 5;
+        config.InitialNumberOfMonsters = 1; //rng.Next(config.NumberOfRooms - 2);
+        config.InitialNumberOfRagePots = 1; //rng.Next(5) + 5;
+        config.MaxRoomCapacity = config.NumberOfRooms;
+        return config;
+    }
+    
+    [TestCase(DifficultyMode.NEWBIEmode, DungeonShapeType.LINEAR)]
+    [TestCase(DifficultyMode.NEWBIEmode, DungeonShapeType.GRID)]
+    [TestCase(DifficultyMode.NEWBIEmode, DungeonShapeType.TREE)]
+    [TestCase(DifficultyMode.NORMALmode, DungeonShapeType.LINEAR)]
+    [TestCase(DifficultyMode.NORMALmode, DungeonShapeType.GRID)]
+    [TestCase(DifficultyMode.NORMALmode, DungeonShapeType.TREE)]
+    [TestCase(DifficultyMode.ELITEmode, DungeonShapeType.LINEAR)]
+    [TestCase(DifficultyMode.ELITEmode, DungeonShapeType.GRID)]
+    [TestCase(DifficultyMode.ELITEmode, DungeonShapeType.TREE)]
+    public void RanTest(DifficultyMode mode, DungeonShapeType shape)
+    {
+        Random rng = new Random();
+        GameConfiguration config = GetRandomConfig(rng, mode, shape);
+        TestAgent agent = new RandomTestAgent(100);
+        for (int i = 0; i < N; i++)
+        {
+            config.RndSeed = rng.Next(int.MaxValue);
+            Game game = new Game(config);
+            GameRunner runner = new GameRunner(game, new GameConsole(), agent);
+            runner.Run();
+        }
+    }
+
+    [Test]
+    public void RanTestNeL()
+    {
+        RanTest(DifficultyMode.NEWBIEmode, DungeonShapeType.LINEAR);
+        STVControlledRandom rng = new STVControlledRandom();
+    }
+
+    [Test]
+    public void RanTestNeG()
+    {
+        RanTest(DifficultyMode.NEWBIEmode, DungeonShapeType.GRID);
+    }
+
+    [Test]
+    public void RanTestNeT()
+    {
+        RanTest(DifficultyMode.NEWBIEmode, DungeonShapeType.TREE);
+    }
+}
