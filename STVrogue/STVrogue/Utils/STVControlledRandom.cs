@@ -1,4 +1,4 @@
-using System;
+    using System;
 
 
 namespace STVrogue.Utils
@@ -20,7 +20,7 @@ namespace STVrogue.Utils
         public int NextInt(int maxvalue);
 
         /// <summary>
-        /// Generate a random flo.ating number in the range of [0..1]
+        /// Generate a random floating number in the range of [0..1]
         /// </summary>
         public double NextDouble();
     }
@@ -81,10 +81,6 @@ namespace STVrogue.Utils
                 if (instance == null)
                 {
                     instance = new RandomGenerator(seed);
-                }
-                else
-                {
-                    throw new InvalidOperationException("RandomGenerator has already been initialized.");
                 }
             }
         }

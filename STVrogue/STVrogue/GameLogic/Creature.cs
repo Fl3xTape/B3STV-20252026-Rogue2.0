@@ -8,7 +8,8 @@ namespace STVrogue.GameLogic
     public class Creature : GameEntity
     {
         #region Fields and properties
-        
+
+        public IRandomGenerator rnd;
         public string Name { get ; private set ; }
         public int HpMax { get; private set;  }
         
@@ -39,6 +40,7 @@ namespace STVrogue.GameLogic
             HpMax = hpmax;
             Hp = hpmax;
             AttackRating = ar;
+            rnd = RandomGenerator.Instance;
         }
         
         /// <summary>
@@ -134,8 +136,7 @@ namespace STVrogue.GameLogic
         }
     }
 
-    public class 
-        Player : Creature
+    public class Player : Creature
     {
         public Player(string id, string name) : base(id, name, 20, 1)
         {

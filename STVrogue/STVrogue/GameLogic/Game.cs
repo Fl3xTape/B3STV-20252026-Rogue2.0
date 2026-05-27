@@ -78,7 +78,6 @@ namespace STVrogue.GameLogic
         /// <see cref="STVControlledRandom"/>, or else write your own implementation.
         /// </summary>
         public IRandomGenerator rnd;
-        //IRandomGenerator rnd = new STVControlledRandom();
         
         #endregion
 
@@ -112,9 +111,6 @@ namespace STVrogue.GameLogic
             int k = 10;     // amount of retries we will do before failing the constructor.
             bool seedSuccess = false;
             
-
-            //STVControlledRandom.SetSeed(conf.RndSeed);
-
             Player = new Player("0", "Bagginssess");
             
             Dungeon d = null;
@@ -160,17 +156,14 @@ namespace STVrogue.GameLogic
         {
             if (!Player.Location.Creatures.Any())
             {
-                // GameConsole.WriteLines("      You are not in combat.");
                 return false;
             }
             else if (c.Flee(this))
             {
-                // GameConsole.WriteLines("      We knew you are a coward.");
                 return true;
             }
             else
             {
-                // GameConsole.WriteLines("      Your flee failed.");    
                 return false; 
             }
         }

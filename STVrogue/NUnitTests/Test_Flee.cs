@@ -9,7 +9,12 @@ namespace NUnitTests
         private GameConfiguration Config;
         public DummyGame(GameConfiguration conf) : base()
         {
+            RandomGenerator.SetSeed(0);
+            rnd = RandomGenerator.Instance;
             Config = conf;
+
+            Dungeon d = new Dungeon(rnd, DungeonShapeType.LINEAR, 3, 1);
+            Player p = new Player("0", "Bagginssess");
         }
     }
     
@@ -42,7 +47,7 @@ namespace NUnitTests
             
             // r1 -- exit
             // The player can't go to the end with Flee
-            Assert.IsFalse(player.Flee(game, game.rnd)); // The generator is a required input, but unused
+            Assert.IsFalse(player.Flee(game)); // The generator is a required input, but unused
             
             r1.Disconnect(exit);
             r1.Connect(r2, Direction.EAST);
